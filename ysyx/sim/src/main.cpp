@@ -1,7 +1,5 @@
 #include <cstdio>
 #include <csignal>
-#include <chrono>
-namespace chrono = std::chrono;
 
 #include "verilated.h" //Defines common routines
 #include "VysyxSoCFull.h"
@@ -22,15 +20,11 @@ void sig_handler(int signo)
 }
 
 static Emulator *emu = nullptr;
-chrono::system_clock::time_point sim_start_time;
 void release()
 {
     if (emu != nullptr)
     {
-        auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - sim_start_time);
-        printf("Simulated %llu cycles in %lds\n",
-               emu->get_cycle(),
-               elapsed.count());
+        emu->state();
         delete emu;
     }
 }
@@ -47,8 +41,7 @@ int main(int argc, char *argv[])
 
     emu = new Emulator(argc, argv);
     printf("Start simulating ...\n");
-    sim_start_time = chrono::system_clock::now();
-    while (!Verilated::gotFinish() && signal_received == 0)
+    while (!Verilated::gotFinish() && signal_received == 0 && !emu->arrive_time())
     {
         emu->step();
     }

@@ -1,5 +1,8 @@
 #include <unistd.h>
 #include <getopt.h>
+#include <chrono>
+
+namespace chrono = std::chrono;
 
 #ifdef DUMP_WAVE_VCD
 #include <verilated_vcd_c.h>
@@ -19,8 +22,8 @@ class Emulator
 public:
     Emulator(int argc, char *argv[])
     {
+        simStartTime = chrono::system_clock::now();
         parseArgs(argc, argv);
-
         if (args.image == nullptr)
         {
             printf("Image file unspecified. Use -i to provide the image of flash");
@@ -84,6 +87,20 @@ public:
         return cycle;
     }
 
+    void state()
+    {
+	auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - simStartTime);
+	printf("Simulation %llu cycles in %lds\n",
+	       get_cycle(),
+	       elapsed.count());
+    }
+    bool arrive_time()
+    {
+       auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - simStartTime);
+       if(elapsed.count() > args.simTime) return true;
+       else return false;
+    }
+
 private:
     void parseArgs(int argc, char *argv[])
     {
@@ -92,13 +109,14 @@ private:
             {"dump-wave", 0, NULL, 0},
             {"log-begin", 1, NULL, 'b'},
             {"log-end", 1, NULL, 'e'},
+            {"sim-time", 1, NULL, 't'},
             {"image", 1, NULL, 'i'},
             {"help", 0, NULL, 'h'},
             {0, 0, NULL, 0}};
 
         int o;
         while ((o = getopt_long(argc, const_cast<char *const *>(argv),
-                                "-hi:b:e:", long_options, &long_index)) != -1)
+                                "-hi:b:e:t:", long_options, &long_index)) != -1)
         {
             switch (o)
             {
@@ -122,6 +140,9 @@ private:
             case 'e':
                 args.dumpEnd = atoll(optarg);
                 break;
+            case 't':
+                args.simTime = atoll(optarg);
+                break;
             }
         }
 
@@ -139,17 +160,19 @@ private:
         printf("                      change compiler option in Makefile to switch format.\n");
         printf("  -b, --log-begin=NUM display log from NUM th cycle\n");
         printf("  -e, --log-end=NUM   stop display log at NUM th cycle\n");
+        printf("  -t, --sim-ime=NUM   stop simulation after NUM seconds\n");
         printf("  -h, --help          print program help info\n");
         printf("\n");
     }
 
     unsigned long long cycle = 0;
-
+    chrono::system_clock::time_point simStartTime;
     struct Args
     {
         bool dumpWave = false;
         unsigned long dumpBegin = 0;
         unsigned long dumpEnd = -1;
+        unsigned long simTime = -1;
         const char *image = nullptr;
     } args;
 
