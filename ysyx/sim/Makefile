@@ -50,9 +50,9 @@ endif
 # need to remove 'TestHarness' module from the ysyxSoCFull.v,
 # because it is the test top module
 pre-build:
-# @mkdir -p $(BUILD_DIR)
-# @cp $(ROOT_PATH)/soc/$(SOC_VSRC_TOP).v $(BUILD_DIR)
-# @sed -i s/ysyx_000000/ysyx_040228/g $(BUILD_DIR)/ysyxSoCFull.v
+	@mkdir -p $(BUILD_DIR)
+	@cp $(ROOT_PATH)/soc/$(SOC_VSRC_TOP).v $(BUILD_DIR)
+	@sed -i s/ysyx_000000/ysyx_22040228/g $(BUILD_DIR)/ysyxSoCFull.v
 	@sed -i '/module TestHarness/,/endmodule/d' $(BUILD_DIR)/ysyxSoCFull.v
 	verilator $(SOC_FLAGS)
 
@@ -65,9 +65,10 @@ SOC_APP_TYPE ?= flash
 # hello, memtest, rtthread
 SOC_APP_NAME ?= hello
 SOC_TARGET := $(SOC_APP_NAME)-$(SOC_APP_TYPE)
+SOC_SIM_TIME ?= -1
 test:
 # TODO: check if the bin exist!
-	$(SOC_VSRC_HOME)/emu -i $(ROOT_PATH)/program/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
+	$(SOC_VSRC_HOME)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/program/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
 
 .PHONY: pre-build build test
 
