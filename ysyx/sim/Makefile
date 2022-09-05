@@ -29,6 +29,7 @@ SOC_VXXFILES      += $(shell find $(SOC_VSRC_LIB_HOME) -name "*.v")
 SOC_VSRC_INCLPATH += -I$(SOC_VSRC_HOME)
 SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/peripheral/uart16550/rtl
 SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/peripheral/spi/rtl
+SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/peripheral/sdram/rtl
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_HOME)
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_LIB_HOME)
 
@@ -68,7 +69,7 @@ SOC_TARGET := $(SOC_APP_NAME)-$(SOC_APP_TYPE)
 SOC_SIM_TIME ?= -1
 test:
 # TODO: check if the bin exist!
-	$(SOC_VSRC_HOME)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/program/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
+	$(SOC_VSRC_HOME)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
 
 .PHONY: pre-build build test
 

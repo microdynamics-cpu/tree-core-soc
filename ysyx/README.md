@@ -1,5 +1,6 @@
 # SoC集成测试Checklist
 **进行SoC集成测试的所有步骤都可以在当前目录下完成**，ysyx的目录结构如下所示：
+#BUG: need to modify
 ```sh
 ysyxSoC/ysyx
 ├── README.md                      # SoC集成步骤说明
@@ -72,42 +73,35 @@ ysyxSoC/ysyx
 * 将`main.py`中的`stud_id`**设置为学号的后六位**。比如学号为22040228的同学，设置`stud_id='040228'`。
 
 ## 命名规范检查(北京时间 2022/10/07 23:59:59前完成)
-运行脚本执行命名规范检查，该脚本会检测设计的.v文件是否符合命名规范，并会生成日志文件check.log。可执行的测试环境为`Debian10`, `Ubuntu 20.04`, `WSL2-Ubuntu 20.04`, `Windows10`
+运行脚本执行命名规范检查，该脚本会检测设计的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、 `WSL2-Ubuntu 20.04`和`Windows10`。
 * 在当前目录下运行`./main.py stand`
 * 最后可以在终端看到检测结果，如果检查通过，则会在终端打印出：
     ```sh
     $> Your core is fine in module name and signal interface
     ```
-* 同时，在该目录下会生成日志文件`check.log`。如果检测未通过，则会给出错误信息，并提示是`module name`错误还是`signal interface`错误。也可以打开⽬录下⽣成的log日志⽂件查看报错原因和提示
+* 同时，在该目录下会生成日志文件`check.log`。如果检测未通过，则会给出错误信息，并提示是`module name`错误还是`signal interface`错误。也可以打开⽬录下⽣成的log日志⽂件查看报错原因和提示。
 
 ## CPU内部修改(北京时间 2022/10/07 23:59:59前完成)
-* [ ] 所有触发器都需要带复位端, 使其复位后带初值
- * Chisel福利: 可以通过以下命令对编译生成的`.fir`文件进行扫描, 找出不带复位端的寄存器:
- ```sh
- grep -rn "^ *reg " xxx.fir | grep -v "reset =>"
- ```
- 其中`xxx.fir`的文件名与顶层模块名相关, 通常位于`build/`目录下.
- 若上述命令无输出, 说明所有寄存器已经带上复位端
-* 若实现了cache, 则需要
- * [ ] 确认ICache和DCache的data array的大小均不大于4KB
- * [ ] 确认ICache和DCache的data array均采用单口RAM
- * [ ] 对data array进行RAM替换: 我们提供接口与流片用RAM一致的简化行为模型,
-   可按需选用[带写掩码的模型](./ysyx/ram/S011HD1P_X32Y2D128_BW.v)或
-   [不带写掩码的模型](./ysyx/ram/S011HD1P_X32Y2D128.v),
-   请对RAM模块进行实例化来实现data array(tag array无需替换), 端口说明见[这里](./ysyx/ram/README.md)
-* 若采用Verilog开发, 则需要
- * [ ] 确认代码中的锁存器(Latch)已经去除
-    * Chisel福利: Chisel不会生成锁存器
- * [ ] 确认代码中的异步复位触发器已经去除, 或已经实现同步撤离
-    * Chisel福利: Chisel默认生成同步复位触发器
-* 对于不使用的顶层输出端口, 需要将其赋值为常数`0`;
-  对于不使用的顶层输入端口, 悬空即可
+* 所有触发器都需要带复位端，使其复位后带初值
+    * **Chisel福利：可以通过以下命令对编译生成的`.fir`文件进行扫描, 找出不带复位端的寄存器：**
+    ```sh
+    $> grep -rn "^ *reg " xxx.fir | grep -v "reset =>"
+    ```
+    其中`xxx.fir`的文件名与顶层模块名相关, 通常位于`build/`目录下。若上述命令无输出, 说明所有寄存器已经带上复位端
+* 若实现了cache, 则需要：
+    * 确认ICache和DCache的data array的大小均不大于4KB
+    * 确认ICache和DCache的data array均采用单口RAM
+    * 对data array进行RAM替换: 我们提供接口与流片用RAM一致的简化行为模型，可按需选用[带写掩码的模型](./ysyx/ram/S011HD1P_X32Y2D128_BW.v)或[不带写掩码的模型](./ysyx/ram/S011HD1P_X32Y2D128.v)，请对RAM模块进行实例化来实现data array(tag array无需替换)，端口说明见[这里](./ysyx/ram/README.md)
+* 若采用Verilog开发，则需要：
+    * 确认代码中的锁存器(Latch)已经去除
+        * **Chisel福利：Chisel不会生成锁存器**
+    * 确认代码中的异步复位触发器已经去除，或已经实现同步撤离
+        * **Chisel福利：Chisel默认生成同步复位触发器**
+* 对于不使用的顶层输出端口，需要将其赋值为常数`0`，对于不使用的顶层输入端口，悬空即可
 
 
-### 代码规范检查(2021/10/07 23:59:59前完成)
-
-* [ ] 对代码进行规范检查, 清除报告的Warning. 具体步骤请参考[这里](./ysyx/lint/README.md)
-
+## 代码规范检查(2021/10/07 23:59:59前完成)
+* 对代码进行规范检查, 清除报告的Warning. 具体步骤请参考[这里](./ysyx/lint/README.md)
 ## Lint检查步骤
 
 1. 将文件`ysyx_学号后六位.v`复制到本目录下(/lint/)

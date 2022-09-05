@@ -89,16 +89,18 @@ public:
 
     void state()
     {
-	auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - simStartTime);
-	printf("Simulation %llu cycles in %lds\n",
-	       get_cycle(),
-	       elapsed.count());
+        auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - simStartTime);
+        printf("Simulation %llu cycles in %lds\n",
+               get_cycle(),
+               elapsed.count());
     }
     bool arrive_time()
     {
-       auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - simStartTime);
-       if(elapsed.count() > args.simTime) return true;
-       else return false;
+        auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - simStartTime);
+        if (elapsed.count() > args.simTime)
+            return true;
+        else
+            return false;
     }
 
 private:
