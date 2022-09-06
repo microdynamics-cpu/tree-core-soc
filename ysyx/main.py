@@ -3,14 +3,16 @@
 import os
 import sys
 
-stud_id = '000000'  # the last six digits of the student ID
+stud_id = '040228'  # the last six digits of the student ID
 
 app_type = ['flash', 'loader']
 app = [('hello', 20), ('memtest', 50), ('rtthread', 350)]
 
 
 def run_stand_check():
-    os.system('python stand/check.py ' + stud_id)
+    os.chdir('stand')
+    os.system('./check.py ' + stud_id)
+    os.chdir('..')
 
 
 def run_lint_check():
