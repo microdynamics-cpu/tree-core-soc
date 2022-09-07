@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-
+ID ?= 000000
 # opt config
 # if want to ouput vcd wave, replace 'FST' to 'VCD', this script can switch trace
 # format by replacing '--trace-fst' to '--trace' automatically
@@ -53,7 +53,7 @@ endif
 pre-build:
 	@mkdir -p $(BUILD_DIR)
 	@cp $(ROOT_PATH)/soc/$(SOC_VSRC_TOP).v $(BUILD_DIR)
-	@sed -i s/ysyx_000000/ysyx_22040228/g $(BUILD_DIR)/ysyxSoCFull.v
+	@sed -i s/ysyx_000000/ysyx_$(ID)/g $(BUILD_DIR)/ysyxSoCFull.v
 	@sed -i '/module TestHarness/,/endmodule/d' $(BUILD_DIR)/ysyxSoCFull.v
 	verilator $(SOC_FLAGS)
 
