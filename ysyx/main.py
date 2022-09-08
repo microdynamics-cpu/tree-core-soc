@@ -1,7 +1,6 @@
 #!/bin/python
 
 import os
-import sys
 import argparse
 
 stud_id = '040228'  # the last six digits of the student ID
@@ -52,7 +51,9 @@ def run_reg_test():
 
 
 def submit_code():
-    pass
+    os.chdir('submit')
+    os.system('./submit.py ' + stud_id)
+    os.chdir('..')
 
 
 def run_soc_comp():
