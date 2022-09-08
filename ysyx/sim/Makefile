@@ -14,22 +14,22 @@ SIM_PATH          := $(shell pwd)
 ROOT_PATH         := $(SIM_PATH)/..
 BUILD_DIR         := $(SIM_PATH)/build
 SOC_CSRC_HOME     += $(SIM_PATH)/src
-SOC_CSRC_LIB_HOME += $(ROOT_PATH)/peripheral/spiFlash
+SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/spiFlash
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_HOME) -name "*.cpp")
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_LIB_HOME) -name "*.cpp")
 
-SOC_VSRC_HOME     += $(BUILD_DIR)
-SOC_COMPILE_HOME  := $(SOC_VSRC_HOME)/emu-compile
+SOC_VSRC_HOME     += $(ROOT_PATH)/soc
+SOC_COMPILE_HOME  := $(BUILD_DIR)/emu-compile
 SOC_VSRC_TOP      := ysyxSoCFull
-SOC_VSRC_LIB_HOME += $(ROOT_PATH)/peripheral/
+SOC_VSRC_LIB_HOME += $(ROOT_PATH)/perip/
 SOC_VSRC_LIB_HOME += $(ROOT_PATH)/ram/
 SOC_VXXFILES      += $(shell find $(SOC_VSRC_HOME) -name "*.v")
 SOC_VXXFILES      += $(shell find $(SOC_VSRC_LIB_HOME) -name "*.v")
 
 SOC_VSRC_INCLPATH += -I$(SOC_VSRC_HOME)
-SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/peripheral/uart16550/rtl
-SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/peripheral/spi/rtl
-SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/peripheral/sdram/rtl
+SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/perip/uart16550/rtl
+SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/perip/spi/rtl
+SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/perip/sdram/rtl
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_HOME)
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_LIB_HOME)
 
@@ -52,9 +52,8 @@ endif
 # because it is the test top module
 pre-build:
 	@mkdir -p $(BUILD_DIR)
-	@cp $(ROOT_PATH)/soc/$(SOC_VSRC_TOP).v $(BUILD_DIR)
-	@sed -i s/ysyx_000000/ysyx_$(ID)/g $(BUILD_DIR)/ysyxSoCFull.v
-	@sed -i '/module TestHarness/,/endmodule/d' $(BUILD_DIR)/ysyxSoCFull.v
+	@sed -i s/ysyx_000000/ysyx_$(ID)/g $(SOC_VSRC_HOME)/ysyxSoCFull.v
+	@sed -i '/module TestHarness/,/endmodule/d' $(SOC_VSRC_HOME)/ysyxSoCFull.v
 	verilator $(SOC_FLAGS)
 
 # modify '-j1' to `-j$(nproc)` to improve compile speed
@@ -69,7 +68,9 @@ SOC_TARGET := $(SOC_APP_NAME)-$(SOC_APP_TYPE)
 SOC_SIM_TIME ?= -1
 test:
 # TODO: check if the bin exist!
-	$(SOC_VSRC_HOME)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
+	$(BUILD_DIR)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
 
-.PHONY: pre-build build test
+clean:
+	rm -rf ./build
+.PHONY: pre-build build test clean
 
