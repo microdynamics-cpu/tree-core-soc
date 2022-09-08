@@ -51,6 +51,10 @@ def run_reg_test():
                       j[0] + ' SOC_SIM_TIME=' + str(j[1]) + ' test')
 
 
+def submit_code():
+    pass
+
+
 def run_soc_comp():
     os.system('make -C soc all')
 
@@ -82,7 +86,8 @@ parser.add_argument('-fc',
 parser.add_argument(
     '-t',
     '--test',
-    help='Example: ./main.py -t [flash|loader] [hello|memtest|rttread|...]',
+    help=
+    'Example: ./main.py -t [flash|loader] [hello|memtest|rttread|keyboard|vga|pal]',
     nargs=2)
 
 parser.add_argument('-r',
@@ -95,6 +100,16 @@ parser.add_argument('-fr',
                     help='run all test in fast flash mode',
                     action='store_true')
 
+parser.add_argument('-su',
+                    '--submit',
+                    help='submit code and spec to CICD',
+                    action='store_true')
+
+parser.add_argument('-y',
+                    '--ysyx',
+                    help='compile ysyxSoCFull framework[NOT REQUIRED]',
+                    action='store_true')
+
 args = parser.parse_args()
 if args.stand:
     run_stand_check()
@@ -105,5 +120,9 @@ elif args.comp or args.fst_comp:
 elif args.regress or args.fst_regress:
     run_comp('normal' if args.regress else 'fast')
     run_reg_test()
+elif args.submit:
+    submit_code()
+elif args.ysyx:
+    run_soc_comp()
 else:
     run_test(args.test)

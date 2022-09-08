@@ -5,7 +5,7 @@
 ysyxSoC/ysyx
 ├── README.md                      # SoC集成步骤说明
 ├── main.py                        # 测试主脚本
-├── program                        # 集成测试程序
+├── prog                        # 集成测试程序
 ├── lint
 │   ├── Makefile                   # 代码规范检查脚本
 │   └── warning.md                 # Verilator中Warning无法清理说明
@@ -51,11 +51,29 @@ ysyxSoC/ysyx
     └── ysyxSoCFull.v              # SoC的Verilog实现
 ```
 
-同学们执行SoC集成的所有测试任务都可以运行该目录下的`main.py`完成，我们提供的`main.py`脚本包含有端口命名检查、代码规范检查和Verilator程序编译与仿真测试的全部功能。具体来说，每个同学都需要按照顺序进行：
+同学们执行SoC集成的所有测试任务都可以运行该目录下的`main.py`完成，我们提供的`main.py`脚本包含有端口命名检查、代码规范检查和Verilator程序编译与仿真测试的全部功能，可以输入`./main.py -h`来获得其支持的功能列表：
+```sh
+$> ./main.py -h
+usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST] [-r] [-fr]
 
-<br></br>
-<center>命名规范检查 -> CPU内部修改 -> 代码规范检查 -> Verilator仿真 -> 提交代码</center>
-<br></br>
+OSCPU Season 4 SoC Test
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s, --stand           run interface standard check
+  -l, --lint            run code lint check
+  -lu, --lint_unused    run code lint with unused check
+  -c, --comp            compile core with SoC in normal flash mode
+  -fc, --fst_comp       compile core with SoC in fast flash mode
+  -t TEST TEST, --test TEST TEST
+                        Example: ./main.py -t [flash|loader] [hello|memtest|rttread|...]
+  -r, --regress         run all test in normal flash mode
+  -fr, --fst_regress    run all test in fast flash mode
+```
+
+具体来说，每个同学都需要按照顺序进行：
+
+>命名规范检查 -> CPU内部修改 -> 代码规范检查 -> Verilator仿真 -> 提交代码
 
 细心的同学可能会发现，`main.py`其实也是分别调用各个子目录下的Makefile或者python脚本来实现的。另外，该集成任务Checklist是按照**任务先后顺序**排列的，所以同学们要确保前面的任务完成后再进行下一个任务。
 
@@ -80,7 +98,7 @@ ysyxSoC/ysyx
 
 ## 命名规范检查(北京时间 2022/10/07 23:59:59前完成)
 运行脚本执行命名规范检查，该脚本会检测设计的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、 `WSL2-Ubuntu 20.04`和`Windows10`。
-* 在当前目录下运行`./main.py stand`
+* 在当前目录下运行`./main.py -s`
 * 最后可以在终端看到检测结果，如果检查通过，则会在终端打印出：
     ```sh
     $> Your core is fine in module name and signal interface
@@ -110,8 +128,8 @@ ysyxSoC/ysyx
 
 ## 代码规范检查(北京时间 2022/10/07 23:59:59前完成)
 对代码进行规范检查，并清除报告中的Warning。具体步骤如下：
-* 运行`./main.py lint`，Verilator将会报告除`DECLFILENAME`和`UNUSED`之外所有类别的Warning，你需要修改代码来清理它们。Warning的含义可以参考[Verilator手册的说明](https://veripool.org/guide/latest/warnings.html#list-of-warnings)。
-* 运行`./main.py lint-unused`，Verilator将会额外报告`UNUSED`类别的Warning，你需要修改代码来尽最大可能清理它们。
+* 运行`./main.py -l`，Verilator将会报告除`DECLFILENAME`和`UNUSED`之外所有类别的Warning，你需要修改代码来清理它们。Warning的含义可以参考[Verilator手册的说明](https://veripool.org/guide/latest/warnings.html#list-of-warnings)。
+* 运行`./main.py -lu`，Verilator将会额外报告`UNUSED`类别的Warning，你需要修改代码来尽最大可能清理它们。
 * 若某些`UNUSED`类别的Warning无法清理，需要填写`./lint`目录中的[warning.md](./lint/warning.md)并给出原因，用于向SoC团队和后端设计团队提供参考。其中[warning.md](./lint/warning.md)中已经给出了格式范例，同学们填写时可以删除。
 
 ## Verilator仿真(北京时间 2022/10/07 23:59:59前完成)
@@ -138,9 +156,9 @@ ysyxSoC/ysyx
 * 接入同学们自行设计的设备需要核内实现并将设备寄存器分配到**Reserve地址范围内**。
 * 注意：地址空间中内没有设置与SoC时钟和管脚相关的功能寄存器，**即不支持通过软件访问某个确定地址来设置SoC相关参数**。
 
-Verilator仿真测试的具体要求和步骤如下：
-* 
-* 确认清除Warning后的代码可以成功启动RT-Thread
+### Verilator仿真要求如下：
+* 使用Verilator将自己核和ysyxSoCFull.v正确编译
+* 确认清除Warning后的代码可以成功启动hello、memtest和rtthread
 * 通过快速模式(跳过SPI传输，不可综合，适合快速调试和迭代)对flash进行模拟，运行并通过本框架提供的测试程序。为了打开flash的快速模式，你需要在`./perip/spi/rtl/spi.v`的开头定义宏`FAST_FLASH`:
   ```verilog
   // define this macro to enable fast behavior simulation
@@ -168,68 +186,88 @@ Verilator仿真测试的具体要求和步骤如下：
         * hello-loader.bin
         * memtest-loader.bin
         * rtthread-loader.bin
-* 为了方便同学们进行Verilator测试，我们**已经在`main.py`中实现了回归测试**。同学们只需要运行`./main.py fst-test`和`./main.py test`就可以依次执行编译、和快速模式与正常模式下的所有测试。
-* 注意：若为了正确运行测试程序而对处理器核进行了修改，**需要重新按照上述流程从头开始依次执行并通过**。
+
+### Verilator仿真具体步骤如下：
+为了方便同学们进行Verilator测试，我们**已经在`main.py`中实现了Verilator编译、仿真测试和回归测试功能**。同学们只需要：
+
+* 运行`./main.py -c`可以编译生成flash正常模式下的仿真可执行文件`simv`，运行`./main.py -fc`可以编译生成flash快速模式下的仿真可执行文件`simv`。
+* 在生成`simv`之后，使用：
+    ```sh
+    $> ./main.py -t APP_TYPE APP_NAME
+    ```
+    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`loader`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`。比如运行`./main.py -t flash hello`可以仿真flash模式下的hello测试程序。
+* 运行`./main.py -r`和`./main.py -fr`就可以依次运行flash正常模式与快速模式下的回归测试。在测试过程中我们对于每个测试都设置了**预设运行时间**，当程序超过**预设运行时间**则会自行停止运行，同学们可以修改`./main.py`中的：
+    ```python
+    app = [('hello', 20), ('memtest', 50), ('rtthread', 350)]
+    ```
+    数字部分以适应自己核的运行，其中数字表示**预设运行时间**，单位为秒。想要仿真不停止可以通过设置一个较大的数字来实现，数字至少是int32类型的。另外为了保证测试时代码总是最新的，**回归测试时会对代码进行重新编译，编译之后再测试**。
+> 注意：若为了正确运行测试程序而对处理器核进行了修改，**需要重新按照上述流程从头开始依次执行并通过**。
 
 ## 提交代码(北京时间 2022/10/07 23:59:59前完成)
-注意：此处提交是为了尽快运行综合流程并发现新问题，此后可以继续调试处理器的实现。
+>注意：此处提交是为了尽快运行综合流程并发现新问题，此后可以继续调试处理器的实现。
 
-提交方式参考[这里](https://github.com/OSCPU/oscpu-framework/blob/2021/README.md)的"代码上传"小节.
+在接入ysyxSoC本框架并完成上述所有测试后，可以开始代码提交流程。提交前请确保所有触发器可复位。具体需要准备的工作如下：
+* 将成功运行flash正常模式rtthread-loader.bin的截图文件rtthread-loader.png放置于`./submit`目录下
+* 填写`./submit`目录下的cache规格文档[cache_spec.md](./submit/cache_spec.md)
+* 确认已经根据代码规范检查填写完成[warning.md](./lint/warning.md)
+* 制作一份带数据流向的处理器架构图，并对图中各模块做简单说明，整理成ysyx_xxxxxx.pdf文件并放置于`./submit`目录下
+* 创建自己的gitee开源仓库，确认仓库的默认主分支是`master`
+* 运行`./main.py -su`，根据提示将代码提交至创建的gitee开源仓库中
+* 将自己仓库的HTTPS格式的URL和学号发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可
+
+> 注意：后续提交不可修改cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://github.com/OSCPU/ysyx_submit/blob/ysyx4/README.md)。
+
 
 ## 协助SoC团队在流片仿真环境中启动RT-Thread(北京时间 2022/11/07 23:59:59前完成)
-提交代码后，具体请关注SoC团队的反馈。
+提交代码后，请及时关注SoC团队的反馈。
 
-需要注意的是， **本项目中的SoC只用于在verilator中验证， 不参与流片环节!
-此外本项目与流片SoC仿真环境仍然有少数不同，
-在本项目中通过测试， 不代表也能通过流片SoC仿真环境的测试，
-在流片SoC仿真环境中的运行结果， 以SoC团队的反馈为准， 因此请大家务必重视SoC团队的反馈.**
-具体地， 两者的不同之处包括:
+> 注意：**本项目中的SoC只用于在Verilator中验证，不参与流片环节!** 此外本项目与流片SoC仿真环境仍然有少数不同，在本项目中通过测试并**不代表也能通过流片SoC仿真环境的测试**，在流片SoC仿真环境中的运行结果，以SoC团队的反馈为准，因此请大家务必重视SoC团队的反馈。
+
+具体来说，相较于基于流片SoC仿真环境的仿真，基于Verilator的仿真:
 * 没有不定态(x态)信号传播的问题
 * 没有跨时钟域和异步桥
 * 没有PLL
+* 没有真实器件的延时信息
 
-**注意：以下内容不是同学们必须要完成的任务，而是给那些对我们提供的SoC仿真框架有定制化需求的同学们提供的。下面分别介绍了生成自己的verilator仿真程序所需要的必要步骤和使用chisel生成ysyxSoCFull框架的过程和注意要点。**
+> **注意：以下内容不是同学们必须要完成的任务，而是给那些对我们提供的SoC仿真框架有定制化需求的同学们提供的。下面分别介绍了生成自己的verilator仿真程序所需要的必要步骤和使用chisel生成ysyxSoCFull框架的过程和注意要点**。
+
 ## ysyxSoCFull定制集成步骤
-1. 将`ysyxSoC/ysyx/peripheral`目录及其子目录下的所有`.v`文件加入verilator的Verilog文件列表
-2. 将`ysyxSoC/ysyx/soc/ysyxSoCFull.v`文件加入verilator的Verilog文件列表
-3. 将处理器Verilog文件加入verilator的Verilog文件列表
-4. 将`ysyxSoC/ysyx/peripheral/uart16550/rtl`和`ysyxSoC/ysyx/peripheral/spi/rtl`两个目录加入包含路径中(使用verilator的`-I`选项)
-5. 将`ysyxSoC/ysyx/peripheral/spiFlash/spiFlash.cpp`文件加入verilator的C++文件列表
-6. 将处理器的复位PC设置为`0x3000_0000`
-7. 在verilator编译选项中添加`--timescale "1ns/1ns"`
-8. 在verilator初始化时对flash进行初始化， 有以下两种方式:
-   * 调用`spiFlash.cpp`中的`flash_init(img)`函数， 用于将bin文件中的指令序列放置在flash中，
-     其中参数`img`是bin文件的路径， 在`ysyxSoC/ysyx/program/bin/flash`和
-     `ysyxSoC/ysyx/program/bin/loader`目录下提供了一些示例
-   * 调用`spiFlash.cpp`中的`flash_memcpy(src， len)`函数， 用于将已经读入内存的指令序列放置在flash中，
-     其中参数`src`是指令序列的地址， `len`是指令序列的长度
-9.  将`ysyxSoCFull`模块(在`ysyxSoC/ysyx/soc/ysyxSoCFull.v`中定义)设置为verilator仿真的顶层
-10. 将`ysyxSoC/ysyx/soc/ysyxSoCFull.v`中的`ysyx_000000`模块名修改为自己的处理器模块名
-11. 通过verilator进行仿真即可
+* 将`ysyxSoC/ysyx/perip`目录及其子目录下的所有`.v`文件加入verilator的Verilog文件列表
+* 将`ysyxSoC/ysyx/soc/ysyxSoCFull.v`文件加入verilator的Verilog文件列表
+* 将处理器Verilog文件加入verilator的Verilog文件列表
+* 将`ysyxSoC/ysyx/perip/uart16550/rtl`和`ysyxSoC/ysyx/perip/spi/rtl`两个目录加入包含路径中(使用verilator的`-I`选项)
+* 将`ysyxSoC/ysyx/perip/spiFlash/spiFlash.cpp`文件加入verilator的C++文件列表
+* 将处理器的复位PC设置为`0x3000_0000`
+* 在verilator编译选项中添加`--timescale "1ns/1ns"`
+* 在verilator初始化时对flash进行初始化，有以下两种方式:
+   * 调用`spiFlash.cpp`中的`flash_init(img)`函数，用于将bin文件中的指令序列放置在flash中，
+     其中参数`img`是bin文件的路径，在`ysyxSoC/ysyx/prog/bin/flash`和`ysyxSoC/ysyx/prog/bin/loader`目录下提供了一些示例
+   * 调用`spiFlash.cpp`中的`flash_memcpy(src, len)`函数，用于将已经读入内存的指令序列放置在flash中，其中参数`src`是指令序列的地址，`len`是指令序列的长度
+* 将`ysyxSoCFull`模块(在`ysyxSoC/ysyx/soc/ysyxSoCFull.v`中定义)设置为verilator仿真的顶层
+* 将`ysyxSoC/ysyx/soc/ysyxSoCFull.v`中的`ysyx_000000`模块名修改为自己的处理器模块名
+* 通过Verilator进行仿真即可
 
 
 ## 自己编译并生成ysyxSoCFull.v步骤
-1. 更新并拉取当前仓库的子模块
+* 更新并拉取当前仓库的子模块
     ```sh
     $> git submodule update --init
     ```
-2. 指定RISCV环境变量为工具链的安装目录，为`riscv64-unknown-elf-xxx`开发版的根目录
+* 指定RISCV环境变量为工具链的安装目录，为`riscv64-unknown-elf-xxx`开发版的根目录
     ```sh
     $> export RISCV=/path/to/riscv/toolchain/installation
     ```
-3. 进入到/ysyx目录下执行`./main.py soc`编译SoC框架
-
+* 进入到`./ysyx`目录下执行`./main.py -y`编译SoC框架，框架的源码结构如下所示：
     ```sh
     ysyxSoC/src/main/scala/ysyx
     ├── chiplink
     │   └── ...                        # ChipLink的实现
     └── ysyx
-        ├── AXI4ToAPB.scala            # AXI4-APB的转接桥， 不支持burst， 且只支持4字节以下的访问
+        ├── AXI4ToAPB.scala            # AXI4-APB的转接桥，不支持burst，且只支持4字节以下的访问
         ├── ChipLinkBridge.scala       # ChipLink-AXI4的转接桥
-        ├── CPU.scala                  # CPU wrapper， 将会按照SoC端口规范实例化一个CPU实例
+        ├── CPU.scala                  # CPU wrapper，将会按照SoC端口规范实例化一个CPU实例
         ├── SoC.scala                  # SoC顶层
-        ├── SPI.scala                  # SPI wrapper， 将会实例化verilog版本的SPI控制器
-        └── Uart16550.scala            # UART16550 wrapper， 将会实例化verilog版本的UART16550控制器
+        ├── SPI.scala                  # SPI wrapper，将会实例化verilog版本的SPI控制器
+        └── Uart16550.scala            # UART16550 wrapper，将会实例化verilog版本的UART16550控制器
     ```
-
-注意：编译时需要使用Java 11，高版本的Java会抛出异常
+> 注意：编译时需要使用Java 11，高版本的Java会抛出异常
