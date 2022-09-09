@@ -15,7 +15,7 @@ public:
             std::cout << "SDL video system is ready to go" << std::endl;
         }
 
-        window = SDL_CreateWindow("PS/2 & VGA Test",
+        win = SDL_CreateWindow("PS/2 & VGA Test",
                                   0,
                                   2500,
                                   640,
@@ -32,25 +32,16 @@ public:
             // Start our event loop
             while (SDL_PollEvent(&event))
             {
-                // Handle each specific event
                 if (event.type == SDL_QUIT)
                 {
                     gameIsRunning = false;
                 }
-                if (event.type == SDL_MOUSEMOTION)
+                else if (event.type == SDL_KEYDOWN)
                 {
-                    std::cout << "mouse has been moved\n";
-                }
-                if (event.type == SDL_KEYDOWN)
-                {
-                    std::cout << "a key has been pressed\n";
+                    std::cout << "a key has been pressed" << std::endl;;
                     if (event.key.keysym.sym == SDLK_0)
                     {
-                        std::cout << "0 was pressed\n";
-                    }
-                    else
-                    {
-                        std::cout << "0 was not pressed\n";
+                        std::cout << "0 was pressed" << std::endl;;
                     }
                 }
                 // Retrieve the state of all of the keys
@@ -59,16 +50,16 @@ public:
                 const Uint8 *state = SDL_GetKeyboardState(NULL);
                 if (state[SDL_SCANCODE_RIGHT])
                 {
-                    std::cout << "right arrow key is pressed\n";
+                    std::cout << "right arrow key is pressed" << std::endl;;
                 }
             }
         }
 
-        SDL_DestroyWindow(window);
+        SDL_DestroyWindow(win);
         SDL_Delay(3000);
         SDL_Quit();
     }
 
 private:
-    SDL_Window *window = nullptr;
+    SDL_Window *win = nullptr;
 };

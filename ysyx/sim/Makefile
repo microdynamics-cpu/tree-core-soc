@@ -34,8 +34,9 @@ SOC_CSRC_INCLPATH += -I$(SOC_CSRC_HOME)
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_LIB_HOME)
 
 SOC_CXXFLAGS += -std=c++11 -static -Wall $(SOC_CSRC_INCLPATH) -DDUMP_WAVE_$(WAVE_FORMAT)
-SOC_FLAGS    += --cc --exe --top-module $(SOC_VSRC_TOP) 
-SOC_FLAGS    += --x-assign unique -O3 -CFLAGS "$(SOC_CXXFLAGS)"
+SOC_LDFLAGS  += -lSDL2
+SOC_FLAGS    += --cc --exe --top-module $(SOC_VSRC_TOP)
+SOC_FLAGS    += --x-assign unique -O3 -CFLAGS "$(SOC_CXXFLAGS)" -LDFLAGS "$(SOC_LDFLAGS)"
 SOC_FLAGS    += $(TRACE_FORMAT) --assert --stats-vars --output-split 30000 --output-split-cfuncs 30000 
 SOC_FLAGS    += --timescale "1ns/1ns" -Wno-fatal
 SOC_FLAGS    += -o $(BUILD_DIR)/emu

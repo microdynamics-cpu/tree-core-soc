@@ -1,6 +1,5 @@
 # SoC集成测试Checklist
 **进行SoC集成测试的所有步骤都可以在当前目录下完成**，ysyx的目录结构如下所示：
-#BUG: need to modify
 ```sh
 ysyxSoC/ysyx
 ├── README.md                      # SoC集成步骤说明
