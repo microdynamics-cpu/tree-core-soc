@@ -2,7 +2,7 @@
 ID ?= 000000
 
 TOP = ysyx_$(ID)
-V_FILE = $(TOP).v
+V_FILE = ../soc/$(TOP).v
 RAM_FILE := ../ram/S011HD1P_X32Y2D128.v
 RAM_FILE += ../ram/S011HD1P_X32Y2D128_BW.v
 LINT_FLAGS = -Wall -Wno-DECLFILENAME
