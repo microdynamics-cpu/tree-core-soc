@@ -68,10 +68,11 @@ int main(int argc, char *argv[])
         std::cout << args.help() << std::endl;
         exit(0);
     }
+
     emu = new Emulator(res);
-    auto win = new MediaWindow();
-    win->run();
-    delete win;
+    // auto win = new MediaWindow();
+    // win->run();
+    // delete win;
     std::cout << "Start simulating ..." << std::endl;
     while (!Verilated::gotFinish() && signal_received == 0 && !emu->arrive_time())
     {

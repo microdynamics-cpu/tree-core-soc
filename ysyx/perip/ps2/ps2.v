@@ -1,4 +1,4 @@
-module keyboard(
+module ps2(
     input ps2_clk,
     input ps2_dat,
     input resetn,
