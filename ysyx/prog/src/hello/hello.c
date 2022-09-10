@@ -3,6 +3,6 @@
 #include <klib-macros.h>
 
 int main(){
-    putstr("Hello RISC-V\n");
+    putstr("Hello World!\n");
     return 0;
 }
