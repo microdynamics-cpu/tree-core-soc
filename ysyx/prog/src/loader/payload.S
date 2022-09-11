@@ -1,8 +1,8 @@
 .section .rodata
 .align 3
-.global program_start, program_end
-program_start:
+.global app_start, app_end
+app_start:
 #ifdef BIN_PATH
 .incbin BIN_PATH
 #endif
-program_end:
+app_end:
