@@ -125,7 +125,17 @@ optional arguments:
     * 确认代码中的异步复位触发器已经去除，或已经实现同步撤离。
         * **Chisel福利：Chisel默认生成同步复位触发器**
 * 对于除了SRAM口之外，其他不使用的核顶层端口(io_interrupt和AXI4 slave)，需要将输出端口置`0`，输入端口悬空。
-
+>注意：虽然开源的Verilator的仿真效率要远高于商业的仿真器(比如vcs)。但是Verilator对SystemVerilog的支持还不是很完整，对RTL代码的检查也偏乐观。为此我们在后端设计前还会使用vcs对同学们的提交的核再次进行仿真。为了避免出现由于Verilator与vcs的仿真行为不一致而导致的仿真结果出错，<sup>[[1]](#id_verilator_sim)</sup>**请`避免`在同学们自己的核中使用如下内容：**
+* 不可综合的语法，例如延时和DPI-C。
+* initial语句。
+* unpacked数组、结构体。
+* interface、package、class。
+* 小端序位标号，如 [0:31]。
+* 由于确实else导致生成锁存器
+* logic类型的X状态和高阻抗Z状态。
+* 使用时钟下降沿触发。
+* 异步reset和跨时钟域。
+* 尝试屏蔽全局时钟信号。
 
 ## 代码规范检查(北京时间 2022/10/07 23:59:59前完成)
 对代码进行规范检查，并清除报告中的Warning。具体步骤如下：
@@ -134,6 +144,10 @@ optional arguments:
 * 若某些`UNUSED`类别的Warning无法清理，需要填写`./lint`目录中的[warning.md](./lint/warning.md)并给出原因，用于向SoC团队和后端设计团队提供参考。其中[warning.md](./lint/warning.md)中已经给出了格式范例，同学们填写时可以删除。
 
 ## Verilator仿真(北京时间 2022/10/07 23:59:59前完成)
+> <sup>[[2]](#id_verilator_cycle)</sup>Verilator是一个支持Verilog/Systemverilog的周期精确(cycle-accurate)的开源仿真器，但是它不能代替Vivado xsim这些事件驱动的仿真器。<sup>[[3]](#id_verilator_intro)</sup>所谓周期精确仿真，是在确定模块输入的情况下，计算出模块在足够长时间后的输出。因此在周期精确仿真中没有延时的概念。可以理解为每次更新都是计算模块在无穷久后处于稳态时的输出。对于CPU这种由一个时钟信号驱动的设计，外层代码(C++代码)只需要通过反复变动时钟信号的值(从0变1，再从1变0)，就能得到每个周期内CPU的状态输出。
+
+><sup>[[3]](#id_verilator_intro)</sup>由于Verilator是一个基于周期的仿真器，这意味着它不会评估单个周期内的时间，也不会模拟精确的电路时序。因此无法从波形中观察到任何时钟周期内的毛刺，也不支持定时信号延迟。另外由于Verilator是基于周期的驱动的仿真器，它不能用于时序仿真、反向注释网表、异步(无时钟)逻辑，或者一般来说任何涉及时间概念的信号变化，也即每当Verilator评估电路时，所有输出都会立即切换。正是由于时钟边沿之间的一切都被忽略了，Verilator的仿真速度才能做到非常快，故Verilator非常适合模拟具有一个或多个时钟的同步数字逻辑电路的功能，或者用于从Verilog/SystemVerilog代码创建软件模型。
+
 对代码使用verilator进行集成测试与仿真，其中SoC的地址空间分配如下：
 | 设备 | 地址空间 |
 | --- | --- |
@@ -155,7 +169,7 @@ optional arguments:
 * CLINT模块位于处理器核内部，SoC不提供，需要同学们自行实现。
 * 接入外部中断需要同学们**自行设计仲裁逻辑**。(核的top层已经预留有io_interrupt接口， 该口会从SoC引出并通过ChipLink接入到FPGA中。同学们需要自行在FPGA上实现PLIC。核在接收到中断会jump到异常处理程序，之后通过读ChipLink MMIO的相关寄存器来查看中断源信息并响应。异常处理完后可以通过写ChipLink MMIO的相关寄存器来清除中断源，外部中断功能是可选实现的，但不实现的话仍需保留io_interrupt接口)。
 * 接入同学们自行设计的设备需要核内实现并将设备寄存器分配到**Reserve地址范围内**。
-* 注意：地址空间中内没有设置与SoC时钟和管脚相关的功能寄存器，**即不支持通过软件访问某个确定地址来设置SoC相关参数**。
+> 注意：地址空间中内没有设置与SoC时钟和管脚相关的功能寄存器，**即不支持通过软件访问某个确定地址来设置SoC相关参数**。
 
 ### Verilator仿真要求如下：
 * 使用Verilator将自己核和ysyxSoCFull.v正确编译。
@@ -191,8 +205,8 @@ optional arguments:
 ### Verilator仿真具体步骤如下：
 为了方便同学们进行Verilator测试，我们**已经在`main.py`中实现了Verilator编译、仿真测试和回归测试功能**。同学们只需要：
 
-* 运行`./main.py -c`可以编译生成flash正常模式下的仿真可执行文件`simv`，运行`./main.py -fc`可以编译生成flash快速模式下的仿真可执行文件`simv`。
-* 在生成`simv`之后，使用：
+* 运行`./main.py -c`可以编译生成flash正常模式下的仿真可执行文件`emu`，运行`./main.py -fc`可以编译生成flash快速模式下的仿真可执行文件`emu`。
+* 在生成`emu`之后，使用：
     ```sh
     $> ./main.py -t APP_TYPE APP_NAME
     ```
@@ -272,3 +286,10 @@ optional arguments:
         └── Uart16550.scala            # UART16550 wrapper，将会实例化verilog版本的UART16550控制器
     ```
 > 注意：编译时需要使用Java 11，高版本的Java会抛出异常，具体见：https://github.com/chipsalliance/rocket-chip/issues/2789
+
+## 参考
+[1] https://fducslg.github.io/ICS-2021Spring-FDU/misc/verilate.html?highlight=sdl#verilator-%E4%BB%BF%E7%9C%9F<span id="id_verilator_sim"></span>
+
+[2] https://fducslg.github.io/ICS-2021Spring-FDU/misc/verilate.html?highlight=sdl#%E5%91%A8%E6%9C%9F%E7%B2%BE%E7%A1%AE%E4%BB%BF%E7%9C%9F<span id="id_verilator_cycle"></span>
+
+[3] http://blog.kuangjux.top/2022/02/20/verilator-learning/<span id="id_verilator_intro"></span>
