@@ -5,25 +5,12 @@
 #include "cxxopts.hpp"
 
 #include <Emulator.hpp>
-#include <MediaWindow.hpp>
 
 #include "verilated.h"
 #include "VysyxSoCFull.h"
 
-static int signal_received = 0;
 static Emulator *emu = nullptr;
 cxxopts::Options args("emu", "OSCPU Seasion 4 SoC Emulator");
-
-void sig_handler(int signo)
-{
-    if (signal_received != 0)
-    {
-        std::cout << "SIGINT received, forcely shutting down." << std::endl;
-        exit(1);
-    }
-    std::cout << "\nSIGINT received, gracefully shutting down... Type Ctrl+C again to stop forcely." << std::endl;
-    signal_received = signo;
-}
 
 void release()
 {
@@ -32,16 +19,6 @@ void release()
         emu->state();
         delete emu;
     }
-}
-
-void env_init()
-{
-    std::cout << "Emulator compiled at " << __DATE__ << ", " << __TIME__ << std::endl;
-    if (signal(SIGINT, sig_handler) == SIG_ERR)
-    {
-        std::cout << "can't catch SIGINT" << std::endl;
-    }
-    atexit(release);
 }
 
 void parseArgs(int argc, char *argv[])
@@ -61,6 +38,7 @@ void parseArgs(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     env_init();
+    atexit(release);
     parseArgs(argc, argv);
     auto res = args.parse(argc, argv);
     if (res.count("help"))
@@ -70,14 +48,8 @@ int main(int argc, char *argv[])
     }
 
     emu = new Emulator(res);
-    // auto win = new MediaWindow();
-    // win->run();
-    // delete win;
-    std::cout << "Start simulating ..." << std::endl;
-    while (!Verilated::gotFinish() && signal_received == 0 && !emu->arrive_time())
-    {
-        emu->step();
-    }
+    std::cout << "[verilator]start simulating ..." << std::endl;
+    emu->run_sim();
 
     return 0;
 }

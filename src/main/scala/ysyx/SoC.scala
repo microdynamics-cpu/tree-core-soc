@@ -47,8 +47,11 @@ class ysyxSoCASIC(implicit p: Parameters) extends LazyModule {
     AddressSet.misaligned(0x30000000, 0x10000000)   // XIP flash
   ))
 
+  val lps2 = LazyModule(new AXI4PS2(AddressSet.misaligned(0x10003000, 0x1000)))
+
   List(lspi.node, luart.node).map(_ := apbxbar)
   List(chiplinkNode, apbxbar := AXI4ToAPB()).map(_ := xbar)
+  List(lps2.node).map(_ := xbar)
   xbar := cpu.masterNode
 
   override lazy val module = new LazyModuleImp(this) with DontTouch {
@@ -86,6 +89,10 @@ class ysyxSoCASIC(implicit p: Parameters) extends LazyModule {
     val uart = IO(chiselTypeOf(luart.module.uart))
     uart <> luart.module.uart
     spi <> lspi.module.spi_bundle
+
+    //expose ps2 and vga slave interface as ports
+    val ps2 = IO(chiselTypeOf(lps2.module.io))
+    ps2 <> lps2.module.io
   }
 }
 
@@ -115,10 +122,18 @@ class ysyxSoCFull(implicit p: Parameters) extends LazyModule {
     fpga.master_mmio.map(_.tieoff())
     fpga.slave.map(_.tieoff())
 
+    // dont test extern intr
     masic.intr_from_chipSlave := false.B
 
+    // spi flash
     val spiFlash = Module(new spiFlash)
     spiFlash.io <> masic.spi
     masic.uart.rx := false.B
+
+    // keyboard
+    val kdb = Module(new kdb)
+    kdb.io.ps2 <> masic.ps2
+    kdb.io.clock := clock
+    kdb.io.resetn := ~reset.asBool
   }
 }

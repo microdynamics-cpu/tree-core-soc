@@ -13,6 +13,27 @@ namespace chrono = std::chrono;
 #include <verilated.h>
 #include <VysyxSoCFull.h>
 
+static int signal_received = 0;
+void sig_handler(int signo)
+{
+    if (signal_received != 0)
+    {
+        std::cout << "SIGINT received, forcely shutting down." << std::endl;
+        exit(1);
+    }
+    std::cout << "\nSIGINT received, gracefully shutting down... Type Ctrl+C again to stop forcely." << std::endl;
+    signal_received = signo;
+}
+
+void env_init()
+{
+    std::cout << "Emulator compiled at " << __DATE__ << ", " << __TIME__ << std::endl;
+    if (signal(SIGINT, sig_handler) == SIG_ERR)
+    {
+        std::cout << "can't catch SIGINT" << std::endl;
+    }
+}
+
 extern "C"
 {
     void flash_init(const char *img);
@@ -23,13 +44,18 @@ class Emulator
 public:
     Emulator(cxxopts::ParseResult &res)
     {
+        // auto win = new MediaWindow();
+        // win->run();
+        // delete win;
         args.dumpWave = res["dump-wave"].as<bool>();
         args.dumpBegin = res["log-begin"].as<unsigned long>();
         auto tmp = res["log-end"].as<unsigned long>();
-        if (tmp > 0) args.dumpEnd = tmp;
+        if (tmp > 0)
+            args.dumpEnd = tmp;
 
         tmp = res["sim-time"].as<unsigned long>();
-        if (tmp > 0) args.simTime = tmp;
+        if (tmp > 0)
+            args.simTime = tmp;
 
         args.image = res["image"].as<std::string>();
 
@@ -112,6 +138,14 @@ public:
             return true;
         else
             return false;
+    }
+
+    void run_sim()
+    {
+        while (!Verilated::gotFinish() && signal_received == 0 && !arrive_time())
+        {
+            step();
+        }
     }
 
 private:
