@@ -7,7 +7,6 @@
 #include <Emulator.hpp>
 
 #include "verilated.h"
-#include "VysyxSoCFull.h"
 
 static Emulator *emu = nullptr;
 cxxopts::Options args("emu", "OSCPU Seasion 4 SoC Emulator");
@@ -30,6 +29,7 @@ void parseArgs(int argc, char *argv[])
         ("b,log-begin", "display log from NUM th cycle", cxxopts::value<unsigned long>()->default_value("0"))
         ("e,log-end", "stop display log at NUM th cycle", cxxopts::value<unsigned long>()->default_value("0"))
         ("t,sim-time", "stop simulation after NUM seconds", cxxopts::value<unsigned long>()->default_value("0"))
+        ("m,sim-mode", "direct sim or cosim with sdl2 to support ps2 and vga", cxxopts::value<std::string>())
         ("i,image", "run with this image file", cxxopts::value<std::string>());
     // clang-format on
     Verilated::commandArgs(argc, argv);
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     emu = new Emulator(res);
     std::cout << "[verilator]start simulating ..." << std::endl;
-    emu->run_sim();
+    emu->runSim();
 
     return 0;
 }

@@ -4,8 +4,8 @@ import os
 import argparse
 
 stud_id = '040228'  # the last six digits of the student ID
-app_type = ['flash', 'loader']
-app = [('hello', 20), ('memtest', 50), ('rtthread', 350)]
+app_type = ['flash', 'mem']
+app = [('hello', 40), ('memtest', 70), ('muldiv', 20), ('rtthread', 350)]
 
 
 def run_stand_check():
@@ -39,8 +39,15 @@ def run_test(val):
     for i in app_type:
         for j in app:
             if val[0] == i and val[1] == j[0]:
-                os.system('make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' +
-                          j[0] + ' SOC_SIM_TIME=' + str(j[1]) + ' test')
+                cmd = 'make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' + j[
+                    0] + ' SOC_SIM_TIME=' + str(j[1])
+                if val[2] == 'gui' or val[2] == 'cmd':
+                    cmd += ' SOC_SIM_MODE=' + val[2] + ' test'
+                    print(cmd)
+                else:
+                    print('error run mode, need to enter "cmd" or "gui"')
+                    return
+                os.system(cmd)
 
 
 def run_reg_test():
@@ -88,8 +95,10 @@ parser.add_argument(
     '-t',
     '--test',
     help=
-    'Example: ./main.py -t [flash|loader] [hello|memtest|rttread|keyboard|vga|pal]',
-    nargs=2)
+    'Example: ./main.py -t [flash|loader] [hello|muldiv|memtest|rttread|keyboard|vga|pal]'
+    +
+    '[cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully',
+    nargs=3)
 
 parser.add_argument('-r',
                     '--regress',

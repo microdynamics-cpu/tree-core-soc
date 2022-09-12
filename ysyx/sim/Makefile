@@ -61,15 +61,13 @@ pre-build:
 build: pre-build
 	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j1
 
-# flash, loader
 SOC_APP_TYPE ?= flash
-# hello, memtest, rtthread
 SOC_APP_NAME ?= hello
 SOC_TARGET := $(SOC_APP_NAME)-$(SOC_APP_TYPE)
 SOC_SIM_TIME ?= -1
+SOC_SIM_MODE ?= cmd
 test:
-# TODO: check if the bin exist!
-	$(BUILD_DIR)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
+	$(BUILD_DIR)/emu -t $(SOC_SIM_TIME) -m $(SOC_SIM_MODE) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
 
 clean:
 	rm -rf ./build
