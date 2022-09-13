@@ -15,6 +15,7 @@ ROOT_PATH         := $(SIM_PATH)/..
 BUILD_DIR         := $(SIM_PATH)/build
 SOC_CSRC_HOME     += $(SIM_PATH)/src
 SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/spiFlash
+SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/kdb
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_HOME) -name "*.cpp")
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_LIB_HOME) -name "*.cpp")
 
@@ -57,9 +58,9 @@ pre-build:
 	@sed -i '/module TestHarness/,/endmodule/d' $(SOC_VSRC_HOME)/ysyxSoCFull.v
 	verilator $(SOC_FLAGS)
 
-# modify '-j1' to `-j$(nproc)` to improve compile speed
+# modify '-j2' to `-j$(nproc)` to improve compile speed
 build: pre-build
-	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j1
+	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j2
 
 SOC_APP_TYPE ?= flash
 SOC_APP_NAME ?= hello

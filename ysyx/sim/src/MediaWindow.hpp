@@ -293,6 +293,8 @@ static KdbInfo keymap[] =
         [SDL_SCANCODE_RGUI] = {0x27, K_EXTENDED},
 };
 
+extern "C" void ps2_read(char dat);
+
 class MediaWindow
 {
 public:
@@ -472,7 +474,7 @@ public:
                 {
                     std::cout << i << std::endl;
                     encode(i);
-                    std::cout << std::hex << "0x" << (int)kdbCode[0] << " " << (int)kdbCode[1] << std::oct << std::endl;
+                    ps2_read(kdbCode[0]);
                 }
             }
         }

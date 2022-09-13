@@ -35,10 +35,7 @@ void env_init()
     }
 }
 
-extern "C"
-{
-    void flash_init(const char *img);
-}
+extern "C" void flash_init(const char *img);
 
 class Emulator
 {

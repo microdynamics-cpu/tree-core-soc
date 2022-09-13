@@ -84,7 +84,7 @@ module ps2(
                 srstate <= sRdata;
                 sraddrEn <= 0;
                 srdataEn <= 1;
-                srdata <= r_ptr == w_ptr? 0 : fifo[r_ptr];
+                srdata <= r_ptr == w_ptr? 32'b0 : {24'b0, fifo[r_ptr]};
                 r_ptr <= r_ptr == w_ptr? r_ptr : r_ptr + 1;
                 srlast <= 1;
                 srid <= io_slave_arid;
@@ -107,7 +107,7 @@ module ps2(
     assign io_slave_arready = sraddrEn;
     assign io_slave_rvalid  = srdataEn;
     assign io_slave_rresp   = 1;
-    assign io_slave_rdata   = srdata;
+    assign io_slave_rdata   = {32'b0, srdata};
     assign io_slave_rlast   = srlast;
     assign io_slave_rid     = srid;
     
