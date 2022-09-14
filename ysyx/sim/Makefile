@@ -58,9 +58,9 @@ pre-build:
 	@sed -i '/module TestHarness/,/endmodule/d' $(SOC_VSRC_HOME)/ysyxSoCFull.v
 	verilator $(SOC_FLAGS)
 
-# modify '-j2' to `-j$(nproc)` to improve compile speed
+# modify '-j6' to `-j$(nproc)` to improve compile speed
 build: pre-build
-	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j2
+	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j6
 
 SOC_APP_TYPE ?= flash
 SOC_APP_NAME ?= hello
