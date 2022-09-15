@@ -2,7 +2,7 @@
 #include <klib.h>
 #include <klib-macros.h>
 
-const int32_t MOD = 1e9 + 7;
+const int32_t MOD = 1e4 + 7;
 
 // #define LOADER
 
@@ -22,7 +22,7 @@ int32_t gcd(int32_t x, int32_t y)
 
 typedef struct Matrix
 {
-    int64_t v11, v12, v21, v22;
+    int32_t v11, v12, v21, v22;
 } Matrix;
 
 Matrix Matrix_mul(Matrix x, Matrix y)
@@ -34,7 +34,7 @@ Matrix Matrix_mul(Matrix x, Matrix y)
     return res;
 }
 
-Matrix fst_exp(Matrix x, int64_t y)
+Matrix fst_exp(Matrix x, int32_t y)
 {
     Matrix res = {1, 0, 0, 1};
     while (y)
@@ -93,11 +93,11 @@ int32_t main()
     putstr("gcd test pass!\n");
 
     Matrix val = {0, 1, 1, 1};
-    Matrix ans = fst_exp(val, 100 - 1);
-    assert((ans.v11 + ans.v12) % MOD == 687995182);
+    Matrix ans = fst_exp(val, 50 - 1);
+    assert((ans.v11 + ans.v12) % MOD == 4803);
 
-    ans = fst_exp(val, 1000 - 1);
-    assert((ans.v11 + ans.v12) % MOD == 517691607);
+    ans = fst_exp(val, 100 - 1);
+    assert((ans.v11 + ans.v12) % MOD == 6545);
     putstr("fibonacci test pass!\n");
 
 #ifdef LOADER
