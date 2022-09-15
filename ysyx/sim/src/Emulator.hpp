@@ -5,6 +5,7 @@
 namespace chrono = std::chrono;
 
 #include "cxxopts.hpp"
+#include "MediaWindow.hpp"
 #ifdef DUMP_WAVE_VCD
 #include <verilated_vcd_c.h>
 #elif DUMP_WAVE_FST
@@ -13,10 +14,28 @@ namespace chrono = std::chrono;
 #include <verilated.h>
 #include <VysyxSoCFull.h>
 
-extern "C"
+static int signal_received = 0;
+void sig_handler(int signo)
 {
-    void flash_init(const char *img);
+    if (signal_received != 0)
+    {
+        std::cout << "SIGINT received, forcely shutting down." << std::endl;
+        exit(1);
+    }
+    std::cout << "\nSIGINT received, gracefully shutting down... Type Ctrl+C again to stop forcely." << std::endl;
+    signal_received = signo;
 }
+
+void env_init()
+{
+    std::cout << "Emulator compiled at " << __DATE__ << ", " << __TIME__ << std::endl;
+    if (signal(SIGINT, sig_handler) == SIG_ERR)
+    {
+        std::cout << "can't catch SIGINT" << std::endl;
+    }
+}
+
+extern "C" void flash_init(const char *img);
 
 class Emulator
 {
@@ -26,11 +45,14 @@ public:
         args.dumpWave = res["dump-wave"].as<bool>();
         args.dumpBegin = res["log-begin"].as<unsigned long>();
         auto tmp = res["log-end"].as<unsigned long>();
-        if (tmp > 0) args.dumpEnd = tmp;
+        if (tmp > 0)
+            args.dumpEnd = tmp;
 
         tmp = res["sim-time"].as<unsigned long>();
-        if (tmp > 0) args.simTime = tmp;
+        if (tmp > 0)
+            args.simTime = tmp;
 
+        args.simMode = res["sim-mode"].as<std::string>();
         args.image = res["image"].as<std::string>();
 
         startTime = chrono::system_clock::now();
@@ -42,21 +64,14 @@ public:
 
         std::cout << "Initializing flash with " << args.image << " ..." << std::endl;
         flash_init(args.image.c_str());
-        std::cout << "Initializing and resetting DUT ..." << std::endl;
 
-        // set rst signal
-        dutPtr = new VysyxSoCFull;
-        dutPtr->reset = 1;
-        for (int i = 0; i < 10; i++)
+        if (args.simMode == "gui")
         {
-            dutPtr->clock = 0;
-            dutPtr->eval();
-            dutPtr->clock = 1;
-            dutPtr->eval();
+            winPtr = new MediaWindow;
         }
-        dutPtr->clock = 0;
-        dutPtr->reset = 0;
-        dutPtr->eval();
+
+        dutPtr = new VysyxSoCFull;
+        reset();
 
         if (args.dumpWave)
         {
@@ -74,11 +89,31 @@ public:
     }
     ~Emulator()
     {
-        if (args.dumpWave)
+        if (wavePtr)
         {
             wavePtr->close();
             delete wavePtr;
         }
+        if (winPtr)
+        {
+            delete winPtr;
+        }
+    }
+
+    void reset()
+    {
+        std::cout << "Initializing and resetting DUT ..." << std::endl;
+        dutPtr->reset = 1;
+        for (int i = 0; i < 10; i++)
+        {
+            dutPtr->clock = 0;
+            dutPtr->eval();
+            dutPtr->clock = 1;
+            dutPtr->eval();
+        }
+        dutPtr->clock = 0;
+        dutPtr->reset = 0;
+        dutPtr->eval();
     }
 
     void step()
@@ -94,18 +129,13 @@ public:
         dutPtr->eval();
     }
 
-    unsigned long long get_cycle()
-    {
-        return cycle;
-    }
-
     void state()
     {
         auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - startTime);
-        std::cout << "Simulation " << get_cycle() << " cycles in " << elapsed.count() << "s" << std::endl;
+        std::cout << "Simulation " << cycle << " cycles in " << elapsed.count() << "s" << std::endl;
     }
 
-    bool arrive_time()
+    bool getArriveTime()
     {
         auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - startTime);
         if (elapsed.count() > args.simTime)
@@ -114,16 +144,41 @@ public:
             return false;
     }
 
+    void runSim()
+    {
+        if (winPtr)
+        {
+            winPtr->initFPS();
+            winPtr->initFB();
+        }
+
+        while (!Verilated::gotFinish() && signal_received == 0 && !getArriveTime())
+        {
+            step();
+            if (winPtr && !(winPtr->step()))
+                break;
+        }
+        if (winPtr)
+        {
+            winPtr->calcFPS();
+            winPtr->release();
+        }
+
+        dutPtr->final();
+    }
+
 private:
     unsigned long long cycle = 0;
     chrono::system_clock::time_point startTime;
     VysyxSoCFull *dutPtr = nullptr;
+    MediaWindow *winPtr = nullptr;
     struct Args
     {
         bool dumpWave = false;
         unsigned long dumpBegin = 0UL;
         unsigned long dumpEnd = -1UL;
         unsigned long simTime = -1UL;
+        std::string simMode = "";
         std::string image = "";
     } args;
 

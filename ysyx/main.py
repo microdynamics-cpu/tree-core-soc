@@ -4,8 +4,8 @@ import os
 import argparse
 
 stud_id = '040228'  # the last six digits of the student ID
-app_type = ['flash', 'loader']
-app = [('hello', 20), ('memtest', 50), ('rtthread', 350)]
+app_type = ['flash', 'mem']
+app = [('hello', 40), ('memtest', 70), ('rtthread', 450), ('muldiv', 60)]
 
 
 def run_stand_check():
@@ -21,11 +21,11 @@ def run_lint_check(tgt):
 def modify_flash_mode(mode):
     if mode == 'fast':
         os.system(
-            "sed -i 's/^\/\/\(`define FAST_FLASH\)/\1/g' ./perip/spi/rtl/spi.v"
+            "sed -i 's/^\/\/\(`define FAST_FLASH\)/\\1/g' ./perip/spi/rtl/spi.v"
         )
     else:
         os.system(
-            "sed -i 's/^\(`define FAST_FLASH\)/\/\/\1/g' ./perip/spi/rtl/spi.v"
+            "sed -i 's/^\(`define FAST_FLASH\)/\/\/\\1/g' ./perip/spi/rtl/spi.v"
         )
 
 
@@ -39,15 +39,23 @@ def run_test(val):
     for i in app_type:
         for j in app:
             if val[0] == i and val[1] == j[0]:
-                os.system('make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' +
-                          j[0] + ' SOC_SIM_TIME=' + str(j[1]) + ' test')
+                cmd = 'make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' + j[
+                    0] + ' SOC_SIM_TIME=' + str(j[1])
+                if val[2] == 'gui' or val[2] == 'cmd':
+                    cmd += ' SOC_SIM_MODE=' + val[2] + ' test'
+                    print(cmd)
+                else:
+                    print('error run mode, need to enter "cmd" or "gui"')
+                    return
+                os.system(cmd)
 
 
 def run_reg_test():
     for i in app_type:
         for j in app:
             os.system('make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' +
-                      j[0] + ' SOC_SIM_TIME=' + str(j[1]) + ' test')
+                      j[0] + ' SOC_SIM_TIME=' + str(j[1]) +
+                      ' SOC_SIM_MODE=cmd test')
 
 
 def submit_code():
@@ -87,9 +95,9 @@ parser.add_argument('-fc',
 parser.add_argument(
     '-t',
     '--test',
-    help=
-    'Example: ./main.py -t [flash|loader] [hello|memtest|rttread|keyboard|vga|pal]',
-    nargs=2)
+    help='Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv]' +
+    '[cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully',
+    nargs=3)
 
 parser.add_argument('-r',
                     '--regress',

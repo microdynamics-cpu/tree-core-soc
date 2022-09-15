@@ -2,30 +2,34 @@
 #include <klib.h>
 #include <klib-macros.h>
 
-extern uint32_t program_start;
-extern uint32_t program_end;
-extern uint32_t _pmem_start;
-#define program_SIZE ((&program_end) - (&program_start))
+extern uint32_t app_start;
+extern uint32_t app_end;
+extern uint32_t _appmem_start;
+#define PROG_SIZE ((&app_end) - (&app_start))
+#define APP_PMEM 0x80000000
 
-int main(){
-    uint32_t* program = (uint32_t*)&program_start;
-    uint32_t* pmem    = (uint32_t*)&_pmem_start;
+int main()
+{
+    uint32_t *prog = (uint32_t *)&app_start;
+    uint32_t *pmem = (uint32_t *)&(_appmem_start);
     putstr("Loading program of size ");
-    printf("%d: expect 128 \'#\'\n", (uint32_t)program_SIZE * sizeof(uint32_t));
-    putstr("Loading.....");
-    uint32_t step = (uint32_t)(&program_end - &program_start) / 128;
-    uint32_t* pre = program;
+    printf("%d: expect 128 \'#\'\n", (uint32_t)PROG_SIZE * sizeof(uint32_t));
+    putstr("Loading.....\n");
+    uint32_t step = (uint32_t)(&app_end - &app_start) / 128;
+    uint32_t *pre = prog;
 
-    while(program < &program_end){
-        *pmem++ = *program++;
-        if((uint32_t)(program - pre) >= step){
+    while (prog < &app_end)
+    {
+        *pmem++ = *prog++;
+        if ((uint32_t)(prog - pre) >= step)
+        {
             putch('#');
-            pre = program;
+            pre = prog;
         }
     }
-    putstr("\nLoad Finished\n");
+    putstr("\nLoad finished\nExec app...\n");
     asm volatile("fence.i");
-    int (*f)() = (int (*)())(0x80000000);
+    int (*f)() = (int (*)())(APP_PMEM);
     f();
     return 0;
 }

@@ -15,6 +15,7 @@ ROOT_PATH         := $(SIM_PATH)/..
 BUILD_DIR         := $(SIM_PATH)/build
 SOC_CSRC_HOME     += $(SIM_PATH)/src
 SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/spiFlash
+# SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/kdb
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_HOME) -name "*.cpp")
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_LIB_HOME) -name "*.cpp")
 
@@ -34,7 +35,7 @@ SOC_CSRC_INCLPATH += -I$(SOC_CSRC_HOME)
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_LIB_HOME)
 
 SOC_CXXFLAGS += -std=c++11 -static -Wall $(SOC_CSRC_INCLPATH) -DDUMP_WAVE_$(WAVE_FORMAT)
-SOC_LDFLAGS  += -lSDL2
+SOC_LDFLAGS  += -lSDL2 -ldl
 SOC_FLAGS    += --cc --exe --top-module $(SOC_VSRC_TOP)
 SOC_FLAGS    += --x-assign unique -O3 -CFLAGS "$(SOC_CXXFLAGS)" -LDFLAGS "$(SOC_LDFLAGS)"
 SOC_FLAGS    += $(TRACE_FORMAT) --assert --stats-vars --output-split 30000 --output-split-cfuncs 30000 
@@ -57,19 +58,17 @@ pre-build:
 	@sed -i '/module TestHarness/,/endmodule/d' $(SOC_VSRC_HOME)/ysyxSoCFull.v
 	verilator $(SOC_FLAGS)
 
-# modify '-j1' to `-j$(nproc)` to improve compile speed
+# modify '-j6' to `-j$(nproc)` to improve compile speed
 build: pre-build
-	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j1
+	$(MAKE) VM_PARALLEL_BUILDS=1 OPT_FAST="-O3" -C $(SOC_COMPILE_HOME) -f V$(SOC_VSRC_TOP).mk -j6
 
-# flash, loader
 SOC_APP_TYPE ?= flash
-# hello, memtest, rtthread
 SOC_APP_NAME ?= hello
 SOC_TARGET := $(SOC_APP_NAME)-$(SOC_APP_TYPE)
 SOC_SIM_TIME ?= -1
+SOC_SIM_MODE ?= cmd
 test:
-# TODO: check if the bin exist!
-	$(BUILD_DIR)/emu -t $(SOC_SIM_TIME) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
+	$(BUILD_DIR)/emu -t $(SOC_SIM_TIME) -m $(SOC_SIM_MODE) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
 
 clean:
 	rm -rf ./build

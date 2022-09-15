@@ -16,14 +16,6 @@ $> git clone --depth 1 -b ysyx4 https://github.com/OSCPU/ysyxSoC.git
 
 注意: 若视频和PDF文件中的说法与本项目说明不一致, **以本项目说明为准**。
 
-## 模块说明
-
-* AXI4 crossbar (来源于Rocket Chip项目, 已在计算所团队的项目中经过流片验证)
-* ChipLink (来源于[sifive-blocks](https://github.com/sifive/sifive-blocks/tree/master/src/main/scala/devices/chiplink), 已在计算所团队的项目中经过流片验证)
-* UART16550 (来源于OpenCores, 已在计算所团队的项目中经过流片验证)
-* SPI控制器 (来源于OpenCores, 已在计算所团队的项目中经过流片验证)
-* SoC集成 (基于diplomacy DSL实现)
-
 ## SoC集成测试Checklist
 **SoC集成测试任务的详细内容请访问[ysyx/README.md](ysyx/README.md)查看，所有任务都可以在./ysyx子目录下完成。**
 
