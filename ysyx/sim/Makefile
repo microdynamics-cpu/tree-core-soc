@@ -15,7 +15,7 @@ ROOT_PATH         := $(SIM_PATH)/..
 BUILD_DIR         := $(SIM_PATH)/build
 SOC_CSRC_HOME     += $(SIM_PATH)/src
 SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/spiFlash
-SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/kdb
+# SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/kdb
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_HOME) -name "*.cpp")
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_LIB_HOME) -name "*.cpp")
 
