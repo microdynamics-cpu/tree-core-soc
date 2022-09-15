@@ -90,14 +90,14 @@ end
 assign ps2_dat = (state != idle_t) ? send_buf[send_cnt] : 1'b1;
 endmodule
 
-import "DPI-C" function void ps2_read(output byte dat);
+// import "DPI-C" function void ps2_read(output byte dat);
 
-module PS2Read (
-  input       clock,
-  input       ren,
-  input [7:0] dat,
-);
-//   always@(posedge clock) begin
-//     if (ren) flash_read(addr, data);
-//   end
-endmodule
+// module PS2Read (
+//   input       clock,
+//   input       ren,
+//   input [7:0] dat,
+// );
+// //   always@(posedge clock) begin
+// //     if (ren) flash_read(addr, data);
+// //   end
+// endmodule

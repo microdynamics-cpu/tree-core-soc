@@ -37,6 +37,7 @@ module ps2(
     reg [7:0] fifo[7:0];
     reg [2:0] w_ptr, r_ptr;
     reg [9:0] buffer;
+    reg [10:0] fake_dat;
     reg [3:0] count;
     reg [2:0] ps2_clk_sync;
     always @(posedge clock) begin
@@ -46,19 +47,24 @@ module ps2(
     always @(posedge clock) begin
         if (!resetn) begin
             count <= 0; w_ptr <= 0;
+            fake_dat <= 11'b11101110000;
         end
         else begin
             if (sampling) begin
-                if (count == 4'd10) begin
+                if (count == 4'd10) begin // cond check to filtrate unactive sign
                     if ((buffer[0] == 0) && // start bit
-                        (ps2_dat) && // stop bit
+                        // (ps2_dat) && // stop bit
+                        (fake_dat[count]) && // stop bit
                         (^buffer[9:1])) begin // odd parity
                         fifo[w_ptr] <= buffer[8:1]; // kbd scan code
+                        // $display("fifo[w_ptr]: %0h", buffer[8:1]);
                         w_ptr <= w_ptr+3'b1;
                     end
                     count <= 0; // for next
                 end else begin
-                    buffer[count] <= ps2_dat; // store ps2_data
+                    // buffer[count] <= ps2_dat; // store ps2_data
+                    buffer[count] <= fake_dat[count];
+                    // $display("count: %d dat: %b", count, fake_dat[count]);
                     count <= count + 3'b1;
                 end
             end
@@ -79,6 +85,7 @@ module ps2(
             sraddrEn <= 1;
             srdataEn <= 0;
             srlast <= 0;
+            // $display("[rst]idle");
         end else if (srstate == sIdle) begin
             if(sraddrEn & io_slave_arvalid) begin
                 srstate <= sRdata;
@@ -88,6 +95,9 @@ module ps2(
                 r_ptr <= r_ptr == w_ptr? r_ptr : r_ptr + 1;
                 srlast <= 1;
                 srid <= io_slave_arid;
+                // $display("idle->rdata");
+                // $display("r_ptr: %d w_prt: %d", r_ptr, w_ptr);
+                // $display("fifo[r_ptr]: %0h", fifo[r_ptr]);
             end
         end else if (srstate == sRdata) begin
             if(srdataEn & io_slave_rready) begin
@@ -95,9 +105,19 @@ module ps2(
                 sraddrEn <= 1;
                 srdataEn <= 0;
                 srlast <= 0;
+                // $display("rdata->idle");
             end
         end
     end
+
+    // always@(*) begin
+        // if(io_slave_araddr == 32'h1000_3000) begin
+            // $display("ps2 addr: %0h", io_slave_araddr);
+        // end
+        // else if(sampling) begin
+        //     $display("poseedge of sampling");
+        // end
+    // end
 
     assign io_slave_awready = 0;
     assign io_slave_wready  = 0;
