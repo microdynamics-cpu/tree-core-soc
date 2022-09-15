@@ -5,7 +5,7 @@ import argparse
 
 stud_id = '040228'  # the last six digits of the student ID
 app_type = ['flash', 'mem']
-app = [('hello', 40), ('memtest', 70), ('muldiv', 20), ('rtthread', 350)]
+app = [('hello', 40), ('memtest', 70), ('rtthread', 450), ('muldiv', 60)]
 
 
 def run_stand_check():
@@ -21,11 +21,11 @@ def run_lint_check(tgt):
 def modify_flash_mode(mode):
     if mode == 'fast':
         os.system(
-            "sed -i 's/^\/\/\(`define FAST_FLASH\)/\1/g' ./perip/spi/rtl/spi.v"
+            "sed -i 's/^\/\/\(`define FAST_FLASH\)/\\1/g' ./perip/spi/rtl/spi.v"
         )
     else:
         os.system(
-            "sed -i 's/^\(`define FAST_FLASH\)/\/\/\1/g' ./perip/spi/rtl/spi.v"
+            "sed -i 's/^\(`define FAST_FLASH\)/\/\/\\1/g' ./perip/spi/rtl/spi.v"
         )
 
 
@@ -54,7 +54,8 @@ def run_reg_test():
     for i in app_type:
         for j in app:
             os.system('make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' +
-                      j[0] + ' SOC_SIM_TIME=' + str(j[1]) + ' test')
+                      j[0] + ' SOC_SIM_TIME=' + str(j[1]) +
+                      ' SOC_SIM_MODE=cmd test')
 
 
 def submit_code():
@@ -94,9 +95,7 @@ parser.add_argument('-fc',
 parser.add_argument(
     '-t',
     '--test',
-    help=
-    'Example: ./main.py -t [flash|loader] [hello|muldiv|memtest|rttread|keyboard|vga|pal]'
-    +
+    help='Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv]' +
     '[cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully',
     nargs=3)
 
