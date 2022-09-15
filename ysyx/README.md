@@ -51,7 +51,7 @@ optional arguments:
   -c, --comp            compile core with SoC in normal flash mode
   -fc, --fst_comp       compile core with SoC in fast flash mode
   -t TEST TEST TEST, --test TEST TEST TEST
-                        Example: ./main.py -t [flash|loader] [hello|muldiv|memtest|rttread|keyboard|vga|pal][cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully
+                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv][cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully
   -r, --regress         run all test in normal flash mode
   -fr, --fst_regress    run all test in fast flash mode
   -su, --submit         submit code and spec to CICD
@@ -144,7 +144,8 @@ optional arguments:
 | SPI               | `0x1000_1000~0x1000_1fff`|
 | VGA               | `0x1000_2000~0x1000_2fff`|
 | PS2               | `0x1000_3000~0x1000_3fff`|
-| Reserve           | `0x1000_4000~0x2fff_ffff`|
+| Ethernet          | `0x1000_4000~0x1000_4fff`|
+| Reserve           | `0x1000_5000~0x2fff_ffff`|
 | SPI-flash XIP Mode| `0x3000_0000~0x3fff_ffff`|
 | ChipLink MMIO     | `0x4000_0000~0x7fff_ffff`|
 | MEM               | `0x8000_0000~0xfbff_ffff`|
