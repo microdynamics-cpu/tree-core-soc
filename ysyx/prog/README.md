@@ -6,7 +6,7 @@
 ```sh
 ysyxSoC/ysyx/prog
 ├── bin
-│   ├── flash                    # 直接在flash上运行的程序, 其中可以对elf文件进行反汇编
+│   ├── flash                    # 直接在flash上运行的程序，其中可以对elf文件进行反汇编
 │   │   ├── hello-flash.elf
 │   │   ├── kdb-flash.bin
 │   │   ├── kdb-flash.elf
@@ -16,19 +16,16 @@ ysyxSoC/ysyx/prog
 │   │   ├── muldiv-flash.elf
 │   │   ├── rtthread-flash.bin
 │   │   └── rtthread-flash.elf
-│   └── mem                      # 通过loader加载并运行的程序, 需要实现fence.i指令才能运行
-│       ├── hello-loader.bin
-│       ├── hello-loader.elf
+│   └── mem                      # 通过loader加载并运行的程序，需要实现fence.i指令才能运行
 │       ├── hello-mem.bin
 │       ├── hello-mem.elf
-│       ├── memtest-loader.bin
 │       ├── memtest-mem.bin
 │       ├── memtest-mem.elf
 │       ├── muldiv-mem.bin
 │       ├── muldiv-mem.elf
-│       └── rtthread-loader.bin
+│       └── rtthread-mem.bin
 ├── README.md                    # 本文档
-└── src                          # 测试程序的参考代码, 用户无需自行编译
+└── src                          # 测试程序的参考代码，用户无需自行编译
     ├── ftom                     # 简单加载器的实现
     ├── hello                    # 输出Hello字符串
     ├── kdb                      # ps2输入测试
@@ -40,9 +37,10 @@ ysyxSoC/ysyx/prog
 ```
 
 ## 测试程序介绍
-
+运行当前目录下测试程序的处理器核需要至少支持RV64IM和Fence.i指令，仅需支持M特权模式下的Trap和中断处理，不支持U、S和M之间特权级切换。Flash上运行的程序不支持4字节以上的访问，不支持AXI4的Burst请求(APB总线和器件的限制)。AXI4的外设(ps2、vga和sdram)要求后续会更新。我们编译好的测试程序保证没有上述行为。
+> 注意：由于ps2、vga和sdram外设还在测试中，所以目前所有的测试都是在`cmd`，即命令行执行环境下运行的。当单独测试某个程序时只需要执行类似`./main.py -t flash hello cmd`命令即可。 
 ### hello
-测试AXI4总线是否能够正确处理读写请求，测试uart外设是否能够正常工作，参考输出如下:
+测试AXI4总线是否能够正确处理读写请求，测试UART外设是否能够正常工作，参考输出如下:
 ```sh
 Hello World!
 ```

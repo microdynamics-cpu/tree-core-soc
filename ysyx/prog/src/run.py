@@ -2,7 +2,7 @@
 
 import os
 
-APP_NAME = 'memtest'
+APP_NAME = 'hello'
 APP_TYPE = 'mem'  # flash, mem, sdram
 APP_ARCH = 'riscv64-mycpu'
 APP_ORG_BIN = APP_NAME + '-' + APP_ARCH + '.bin'
@@ -47,14 +47,12 @@ if APP_TYPE == 'flash':
 elif APP_TYPE == 'mem':
     chg_ld_script(APP_TYPE)
     chg_ld_addr('0x80000000')
-    # os.system('cat $AM_HOME/scripts/' + APP_ARCH + '.mk')
     os.chdir(APP_NAME)
     os.system('make ARCH=' + APP_ARCH)
     os.system('cp build/' + APP_ORG_BIN + ' ' + HOME_DIR + '/loader')
 
     chg_ld_script('flash')
     chg_ld_addr('0x30000000')
-    # os.system('cat $AM_HOME/scripts/' + APP_ARCH + '.mk')
     os.chdir(HOME_DIR + '/loader')
     os.system("sed -i 's/^\(BIN_PATH\s\+=\s\+\)\(.\+\)/\\1" + APP_NAME + "-" +
               APP_ARCH + "\.bin/' " + "Makefile")
