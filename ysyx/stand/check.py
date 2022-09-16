@@ -3,6 +3,7 @@
 import sys
 import re
 import logging
+from io import open
 
 logging.basicConfig(
     level=logging.WARNING,
