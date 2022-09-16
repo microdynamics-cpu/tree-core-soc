@@ -74,21 +74,22 @@ optional arguments:
     ```sh
     $> cat CPU.v ALU.v regs.v ... > ysyx_040228.v
     ```
-* 将CPU顶层命名修改为`ysyx_学号后六位.v`，如`ysyx_040228`。
+* 将CPU顶层命名修改为`ysyx_学号后六位.v`，如`ysyx_040228.v`。
 * 按照[CPU端口命名规范](./stand/interface.md)修改CPU顶层端口名。
 * 为CPU内的所有模块名添加前缀`ysyx_学号后六位_`。
     * 如`module ALU`修改为`module ysyx_040228_ALU`。
     * Chisel福利：我们提供一个[firrtl transform](./utils/AddModulePrefix.scala)来自动添加模块名前缀，使用方法参考[相关说明文档](./utils/README.md)。
 * 对于使用Verilog代码实现的处理器核，目前暂时无法进行模块名前缀的自动添加，请手动进行添加。
-* **将改好的`ysyx_040228.v`放到的soc/目录下**。
+* **将改好的`ysyx_学号后六位.v`，如`ysyx_040228.v`放到的./soc目录下**。
 * 将`main.py`中的`stud_id`**设置为学号的后六位**，比如学号为22040228的同学，设置`stud_id='040228'`。
+> 注意：Verilog/Systemverilog开发的同学在合并代码时要删除或注释掉`include`行，要保证核的所有代码和参数定义都在且仅在`ysyx_学号后六位.v`文件中。同时删除或注释掉接入difftest时可能引入的DPI-C函数。合并代码的具体操作可以自己写个脚本实现。
 
 ## 命名规范检查(北京时间 2022/10/07 23:59:59前完成)
 运行脚本执行命名规范检查，该脚本会检测同学们实现的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、 `WSL2-Ubuntu 20.04`和`Windows10`。
 * 在当前目录下运行`./main.py -s`。
 * 最后可以在终端看到检测结果，如果检查通过，则会在终端打印出：
     ```sh
-    $> Your core is fine in module name and signal interface
+    $> Your core is FINE in module name and signal interface
     ```
 * 同时，在该`./stand`下会生成日志文件`check.log`。如果检测未通过，则会给出错误信息，并提示是`module name`错误还是`signal interface`错误。也可以打开⽣成的log日志⽂件查看报错原因和提示。
 > 注意：处理器核的端口定义要严格按照[CPU端口命名规范](./stand/interface.md)来修改，**不能在端口中有多余的注释、`wire`和其他的自定义信号**，否则可能会导致后续的测试出现问题。另外一生一芯四期SoC采用共享SRAM的方法实现Cache，所以需在CPU端口中额外添加8组SRAM接口，具体方法见下[CPU内部修改](#cpu内部修改北京时间-20221007-235959前完成)。
