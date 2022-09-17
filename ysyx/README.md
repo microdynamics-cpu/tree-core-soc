@@ -124,7 +124,7 @@ optional arguments:
 * 异步reset和跨时钟域。
 * 尝试屏蔽全局时钟信号。
 
-> 注意：再强调一下：
+> 注意，再强调一下：
 > 1. 所有的寄存器**都必须要复位**，不然同学们的核可能通过了Verilator测试，但是过不了VCS测试。比如在VCS仿真阶段，同学们核的Cache可能仿真会出现问题。一个可能的原因是Cache在进行写回操作时寄存器忘记复位导致出现未知态而无法被选择。
 > 2. AXI4总线**不要只用ready作为切换状态的信号**，**因为在VCS上进行仿真的SoC默认ready是一直拉高的**，可能会导致同学们的核在VCS仿真下出现AXI4握手和状态机切换问题。
 
@@ -133,7 +133,7 @@ optional arguments:
 * 运行`./main.py -l`，Verilator将会报告除`DECLFILENAME`和`UNUSED`之外所有类别的Warning，你需要修改代码来清理它们。Warning的含义可以参考[Verilator手册的说明](https://veripool.org/guide/latest/warnings.html#list-of-warnings)。
 * 运行`./main.py -lu`，Verilator将会额外报告`UNUSED`类别的Warning，你需要修改代码来尽最大可能清理它们。
 * 若某些`UNUSED`类别的Warning无法清理，需要填写`./lint`目录中的[warning.md](./lint/warning.md)并给出原因，用于向SoC团队和后端设计团队提供参考。其中[warning.md](./lint/warning.md)中已经给出了格式范例，同学们填写时可以自行删除。
->注意：<sup>[[1]](#id_verilator_unopt)</sup>Verilator对于**组合逻辑环**通常会报`UNOPT`或者`UNOPTFLAT`警告，这是因为组合逻辑环需要多次迭代后才能得到最终的结果(收敛)。这两种警告的区别在于，一个是Verilator生成`flatten netlist`前报告的，一个是生成后报告的。虽然Verilator声称忽略这些警告不会影响仿真的正确性，但是也有一种可能是我们的核内确实存在有组合逻辑环。如果有，很可能是核内有地方写错了。根据我们的经验，大家在写流水线的hazard部分时比较容易写出组合逻辑环。
+>注意：<sup>[[1]](#id_verilator_unopt)</sup>Verilator对于**组合逻辑环**通常会报`UNOPT`或者`UNOPTFLAT`警告，这是因为组合逻辑环需要多次迭代后才能得到最终的结果(收敛)。这两种警告的区别在于，一个是Verilator生成`flatten netlist`前报告的，一个是生成后报告的。虽然Verilator声称忽略这些警告不会影响仿真的正确性，但是也有一种可能是同学们的核内确实存在有组合逻辑环。如果有，很可能是核内有地方写错了。根据我们的经验，大家在写流水线的hazard部分时比较容易写出组合逻辑环。
 
 > 对于Verilator报告的`UNOPT`警告，**某些情况下不一定是真的存在组合逻辑环**。这是因为，出于仿真性能上的考虑，Verilator并不是按信号的每一位来单独计算的，通常会把很多信号放一起计算。**此时如果确定处理器核内确实不存在组合逻辑环的话，可以使用`/* verilator spit_var */`来消除警告，并继续进行下面的测试过程。** 组合逻辑环与UNPOT的具体例子可以参见<sup>[[1]](#id_verilator_unopt)</sup>。
 
