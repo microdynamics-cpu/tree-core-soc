@@ -17,7 +17,7 @@ $> git clone --depth 1 -b ysyx4 https://github.com/OSCPU/ysyxSoC.git
 注意: 若视频和PDF文件中的说法与本项目说明不一致, **以本项目说明为准**。
 
 ## SoC集成测试Checklist
-**SoC集成测试任务的详细内容请访问[ysyx/README.md](ysyx/README.md)查看，所有任务都可以在./ysyx子目录下完成。**
+**SoC集成测试任务的详细内容请点击[./ysyx/README.md](./ysyx/README.md)查看，所有任务都可以在./ysyx子目录下完成。**
 
 ## 以下为Rocket Chip项目的README内容
 
