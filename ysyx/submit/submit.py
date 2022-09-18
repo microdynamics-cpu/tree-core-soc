@@ -5,7 +5,7 @@ import sys
 core_id = sys.argv[1:2][0]
 
 file_list = [
-    'reg-test.png', 'rtthread-loader.png', 'cache_spec.md',
+    'rtthread-mem.png', 'cache_spec.md',
     '../lint/warning.md', 'ysyx_' + core_id + '.pdf',
     '../soc/' + 'ysyx_' + core_id + '.v'
 ]

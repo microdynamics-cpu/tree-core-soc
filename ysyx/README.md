@@ -175,6 +175,8 @@ optional arguments:
   // for flash by skipping SPI transfers
   `define FAST_FLASH
   ```
+  > 注意：**事实上同学们不需要真正去添加`FAST_FLASH`宏，因为我们已经添加好了，并且我们已经在`main.py`中维护了自动切换`FAST_FLASH`宏的功能**，这一节只是在给同学们介绍Verilator仿真的过程。并不需要同学们上手修改代码，而下一节[Verilator仿真具体步骤](#verilator仿真具体步骤如下)才是同学们需要实际操作的部分。
+
   具体来说，该模式下spi控制器会直接使用DPI-C函数将需要的程序和数据读到AXI4总线侧，而避免原先`AXI4<--->SPI<--->DPI-C`中的AXI4到SPI协议的转换过程，提高了程序仿真的速度。对于每个同学来说，都需要通过：
   * 直接在flash上运行的程序(位于`./prog/bin/flash`目录下)：
     * hello-flash.bin
@@ -212,10 +214,11 @@ optional arguments:
 * 运行`./main.py -c`就可以编译生成flash正常模式下的仿真可执行文件`emu`，运行`./main.py -fc`可以编译生成flash快速模式下的仿真可执行文件`emu`。为了提高编译速度，可以修改`./sim/Makefile`中`build`的`-j6`选项。
 * 在生成`emu`之后，使用：
     ```sh
-    $> ./main.py -t APP_TYPE APP_NAME SOC_SIM_MODE
+    $> ./main.py -t APP_TYPE APP_NAME SOC_SIM_MODE SOC_WAV_MODE
     ```
-    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。比如运行`./main.py -t flash hello cmd`可以仿真flash模式下的命令行执行环境的hello测试程序。~~运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。~~
-    > 注意：**所有的测试程序只能在一种执行环境下运行，具体在哪个环境下运行见[文档](./prog/README.md)**。
+    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。`SOC_WAV_MODE`的可选值有`no-wave`和`wave`。比如运行`./main.py -t flash hello cmd no-wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且不输出波形。运行`./main.py -t mem hello cmd wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且输出波形，波形文件的路径为`./ysyx/soc.wave`。波形的默认格式是`FST`，FST是GTKWave自己开发的一种二进制波形格式，相比VCD文件体积更小。~~运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。~~
+    > 注意：**所有的测试程序只能在一种执行环境下运行，具体在哪个环境下运行见[文档](./prog/README.md)**。如果需要输出VCD格式的波形文件，只需要在[./sim/Makefile](./sim/Makefile)的开头把`WAVE_FORMAT ?= FST`修改成`WAVE_FORMAT ?= VCD`，然后重新编译即可。**需要强调的一点是使用`wave`选项开启波形输出后，程序运行时间会变长，如果程序没有跑出结果就结束的话，请自行修改下面小节介绍的"预设运行时间"。**
+
 * 运行`./main.py -r`和`./main.py -fr`就可以依次运行flash正常模式与快速模式的回归测试，回归测试只测试在`cmd`执行环境下的程序，`gui`执行环境下的程序不进行回归测试。
 * 在测试过程中我们对于每个测试都设置了**预设运行时间**，当程序超过**预设运行时间**后会自行停止运行，同学们可以修改`./main.py`中的：
     ```python
@@ -230,7 +233,6 @@ optional arguments:
 >注意：此处提交是为了尽快运行综合流程并发现新问题，此后可以继续调试处理器核的实现。
 
 在接入ysyxSoC本框架并完成上述所有测试后，可以开始代码提交流程。提交前请确保所有触发器可复位。具体需要准备的工作如下：
-* 将difftest成功运行指令集测试的截图文件`reg-test.png`放置于`./submit`目录下，截图不必包含所有的结果输出，但是必须包含使用date命令输出的当前时间。
 * 将成功运行本框架的flash正常模式`rtthread-mem.bin`的截图文件`rtthread-mem.png`放置于`./submit`目录下。
 * 填写`./submit`目录下的cache规格文档[cache_spec.md](./submit/cache_spec.md)。
 * 确认已经根据代码规范检查并在`./lint`目录下填写完[warning.md](./lint/warning.md)。

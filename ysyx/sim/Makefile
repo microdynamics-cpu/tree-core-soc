@@ -67,8 +67,9 @@ SOC_APP_NAME ?= hello
 SOC_TARGET := $(SOC_APP_NAME)-$(SOC_APP_TYPE)
 SOC_SIM_TIME ?= -1
 SOC_SIM_MODE ?= cmd
+SOC_WAV_MODE ?=
 test:
-	$(BUILD_DIR)/emu -t $(SOC_SIM_TIME) -m $(SOC_SIM_MODE) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
+	$(BUILD_DIR)/emu $(SOC_WAV_MODE) -t $(SOC_SIM_TIME) -m $(SOC_SIM_MODE) -i $(ROOT_PATH)/prog/bin/$(SOC_APP_TYPE)/$(SOC_TARGET).bin
 
 clean:
 	rm -rf ./build
