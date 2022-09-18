@@ -135,7 +135,7 @@ optional arguments:
 * 若某些`UNUSED`类别的Warning无法清理，需要填写`./lint`目录中的[warning.md](./lint/warning.md)并给出原因，用于向SoC团队和后端设计团队提供参考。其中[warning.md](./lint/warning.md)中已经给出了格式范例，同学们填写时可以自行删除。
 >注意：<sup>[[1]](#id_verilator_unopt)</sup>Verilator对于**组合逻辑环**通常会报`UNOPT`或者`UNOPTFLAT`警告，这是因为组合逻辑环需要多次迭代后才能得到最终的结果(收敛)。这两种警告的区别在于，一个是Verilator生成`flatten netlist`前报告的，一个是生成后报告的。虽然Verilator声称忽略这些警告不会影响仿真的正确性，但是也有一种可能是同学们的核内确实存在有组合逻辑环。如果有，很可能是核内有地方写错了。根据我们的经验，大家在写流水线的hazard部分时比较容易写出组合逻辑环。
 
-> 对于Verilator报告的`UNOPT`警告，**某些情况下不一定是真的存在组合逻辑环**。这是因为，出于仿真性能上的考虑，Verilator并不是按信号的每一位来单独计算的，通常会把很多信号放一起计算。**此时如果确定处理器核内确实不存在组合逻辑环的话，可以使用`/* verilator spit_var */`来消除警告，并继续进行下面的测试过程。** 组合逻辑环与UNPOT的具体例子可以参见<sup>[[1]](#id_verilator_unopt)</sup>。
+> 对于Verilator报告的`UNOPT`警告，**某些情况下不一定是真的存在组合逻辑环**。这是因为，出于仿真性能上的考虑，Verilator并不是按信号的每一位来单独计算的，通常会把很多信号放一起计算。**此时如果确定处理器核内确实不存在组合逻辑环的话，可以使用`/* verilator split_var */`来消除警告，并继续进行下面的测试过程。** 组合逻辑环与UNPOT的具体例子可以参见<sup>[[1]](#id_verilator_unopt)</sup>。
 
 ## Verilator仿真(北京时间 2022/10/07 23:59:59前完成)
 > <sup>[[3]](#id_verilator_cycle)</sup>Verilator是一个支持Verilog/SystemVerilog的周期精确(cycle-accurate)的开源仿真器，但是它不能代替Vivado xsim这些事件驱动的仿真器。<sup>[[4]](#id_verilator_intro)</sup>所谓周期精确仿真，是在确定模块输入的情况下，计算出模块在足够长时间后的输出。因此在周期精确仿真中没有延时的概念。可以理解为每次更新都是计算模块在无穷久后处于稳态时的输出。对于CPU这种由一个时钟信号驱动的设计，外层代码(C++代码)只需要通过反复变动时钟信号的值(从0变1，再从1变0)，就能得到每个周期内CPU的状态输出。
