@@ -39,7 +39,7 @@ ysyxSoC/ysyx
 同学们执行SoC集成的所有测试任务都可以运行当前目录下的`main.py`完成，我们提供的`main.py`脚本包含有端口命名检查、代码规范检查和Verilator程序编译与仿真测试的全部功能，可以输入`./main.py -h`来获得其支持的功能列表：
 ```sh
 $> ./main.py -h
-usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST] [-r] [-fr] [-su] [-y]
+usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST TEST] [-r] [-fr] [-su] [-y]
 
 OSCPU Season 4 SoC Test
 
@@ -310,8 +310,10 @@ optional arguments:
 * UART16550 (来源于OpenCores, 已在计算所团队的项目中经过流片验证)。
 * SPI控制器 (来源于OpenCores, 已在计算所团队的项目中经过流片验证)。
 * SoC集成 (基于diplomacy DSL实现)。
-* 感谢[李国旗(ysyx_22040228)](https://github.com/xunqianxun)同学的对接测试，李国旗帮忙测试出flash版本乘除法测试的访存宽度bug，总结了AXI调试过程中的经验。在介绍本框架时也是使用李国旗的核进行举例的。
+* 感谢[李国旗(ysyx_22040228)](https://github.com/xunqianxun)同学的对接测试，李国旗帮忙测试出flash版本乘除法测试的访存宽度bug，总结了AXI调试过程中的经验。在介绍本框架时也是使用李国旗同学的核进行举例的。
 * 感谢[郑永煜(ysyx_22040450)](./)同学对代码规范检查脚本提出的修改意见。
+* 感谢[万子琦(ysyx_22040698)](./)同学对README.md中的错别字的提示。
+* 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误的问题。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>
