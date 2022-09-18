@@ -50,8 +50,8 @@ optional arguments:
   -lu, --lint_unused    run code lint with unused check
   -c, --comp            compile core with SoC in normal flash mode
   -fc, --fst_comp       compile core with SoC in fast flash mode
-  -t TEST TEST TEST, --test TEST TEST TEST
-                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv][cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully
+  -t TEST TEST TEST TEST, --test TEST TEST TEST TEST
+                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv] [cmd|gui] [no-wave|wave]. note: some programs dont support gui mode, so need to set right mode carefully
   -r, --regress         run all test in normal flash mode
   -fr, --fst_regress    run all test in fast flash mode
   -su, --submit         submit code and spec to CICD

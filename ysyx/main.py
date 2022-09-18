@@ -106,7 +106,7 @@ parser.add_argument(
     '--test',
     help='Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv] ' +
     '[cmd|gui] [no-wave|wave]. note: some programs dont support gui mode,' +
-    'so need to set right mode carefully',
+    ' so need to set right mode carefully',
     nargs=4)
 
 parser.add_argument('-r',
