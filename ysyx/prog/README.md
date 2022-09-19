@@ -7,6 +7,7 @@
 ysyxSoC/ysyx/prog
 ├── bin
 │   ├── flash                    # 直接在flash上运行的程序，其中可以对elf文件进行反汇编
+│   │   ├── hello-flash.bin
 │   │   ├── hello-flash.elf
 │   │   ├── kdb-flash.bin
 │   │   ├── kdb-flash.elf

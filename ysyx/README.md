@@ -100,7 +100,8 @@ optional arguments:
     ```sh
     $> grep -rn "^ *reg " xxx.fir | grep -v "reset =>"
     ```
-    其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。
+    其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。如果上述存在输出，需要按照行号到`xxx.fir`中指定行查看，由于reg的`reset =>`可能会换行，这个换行也会导致命令行输出。所以还需再检查下一行的内容中是否存在`reset =>`。
+
 * 对于Cache来说，需要：
     * 确认ICache和DCache的data array的大小均不大于4KB，总和不大于8KB。
     * 确认ICache和DCache的data array均采用单口RAM。
@@ -313,7 +314,7 @@ optional arguments:
 * 感谢[李国旗(ysyx_22040228)](https://github.com/xunqianxun)同学的对接测试，李国旗帮忙测试出flash版本乘除法测试的访存宽度bug，总结了AXI调试过程中的经验。在介绍本框架时也是使用李国旗同学的核进行举例的。
 * 感谢[郑永煜(ysyx_22040450)](./)同学对代码规范检查脚本提出的修改意见。
 * 感谢[万子琦(ysyx_22040698)](./)同学对README.md中的错别字的提示。
-* 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误的问题。
+* 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误和提交脚本换行的问题。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>

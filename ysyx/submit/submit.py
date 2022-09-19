@@ -27,7 +27,7 @@ if all_exist:
 
     for v in file_list:
         os.system('cp ' + v + ' ./' + repo_name)
-        os.chdir('./' + repo_name)
-        os.system('git add .')
-        os.system('git commit -m "dc & vcs"')
-        os.system('git push')
+    os.chdir('./' + repo_name)
+    os.system('git add .')
+    os.system('git commit -m "dc & vcs"')
+    os.system('git push')
