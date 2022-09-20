@@ -243,7 +243,7 @@ optional arguments:
   > 注意：除了clone的`./submit`的gitee仓库外，不要在`./submit`中添加额外的文件夹，因为提交脚本是通过`os.path.isdir()`来自动确定本地clone的仓库名字的，如果`./submit`中存在多个文件夹，则程序无法分辨哪个是本地clone的仓库了。
 * 将自己仓库的`HTTPS格式的URL`和`ysyx_学号后六位`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
 
-> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://github.com/OSCPU/ysyx_submit/blob/ysyx4/README.md)。
+> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://gitee.com/OSCPU/ysyx_submit/blob/ysyx4)。
 
 
 ## 协助SoC团队在流片仿真环境中启动RT-Thread(北京时间 2022/11/07 23:59:59前完成)
