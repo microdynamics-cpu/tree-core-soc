@@ -46,7 +46,7 @@ module ps2(
     wire sampling = ps2_clk_sync[2] & ~ps2_clk_sync[1];
     always @(posedge clock) begin
         if (!resetn) begin
-            count <= 0; w_ptr <= 0;
+            count <= 0; w_ptr <= 0; r_ptr <= 0;
             fake_dat <= 11'b11101110000;
         end
         else begin
@@ -98,6 +98,7 @@ module ps2(
                 // $display("idle->rdata");
                 // $display("r_ptr: %d w_prt: %d", r_ptr, w_ptr);
                 // $display("fifo[r_ptr]: %0h", fifo[r_ptr]);
+                // $display("srid: %0h", io_slave_arid);
             end
         end else if (srstate == sRdata) begin
             if(srdataEn & io_slave_rready) begin
@@ -111,7 +112,7 @@ module ps2(
     end
 
     // always@(*) begin
-        // if(io_slave_araddr == 32'h1000_3000) begin
+        // if(io_slave_araddr >= 32'h1000_3000) begin
             // $display("ps2 addr: %0h", io_slave_araddr);
         // end
         // else if(sampling) begin
