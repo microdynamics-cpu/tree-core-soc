@@ -293,7 +293,7 @@ static KdbInfo keymap[] =
         [SDL_SCANCODE_RGUI] = {0x27, K_EXTENDED},
 };
 
-// extern "C" void ps2_read(char dat);
+extern "C" void kdb_read(char dat);
 
 class MediaWindow
 {
@@ -468,15 +468,27 @@ public:
             }
             const Uint8 *kdbState = SDL_GetKeyboardState(NULL);
             int keyLen = sizeof(keymap) / sizeof(KdbInfo);
+            bool is_find = false;
             for (int i = 0; i < keyLen; ++i)
             {
                 if (kdbState[i])
                 {
-                    std::cout << i << std::endl;
+                    // std::cout << i << std::endl;
                     encode(i);
-                    // ps2_read(kdbCode[0]);
+                    kdb_read(kdbCode[0]);
+                    is_find = true;
+                    break;
                 }
             }
+
+            if (!is_find)
+            {
+                kdb_read(0x00);
+            }
+        }
+        else
+        {
+            kdb_read(0x00);
         }
 
         SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
