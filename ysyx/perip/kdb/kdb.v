@@ -25,6 +25,8 @@ always @(posedge clock or negedge resetn)
         clk_div <= ~clk_div;
     end
 
+reg[7:0] dat;
+PS2Read ps2Read(clock, dat);
 assign ps2_clk = clk_div;
 assign ps2_dat = 1'b1;
 endmodule
@@ -37,6 +39,7 @@ module PS2Read (
 );
   always@(posedge clock) begin
     ps2_read(dat);
-    $display("PS2Read dat: %0h", dat);
+    if (dat != 8'b0)
+      $display("PS2Read dat: %0h", dat);
   end
 endmodule

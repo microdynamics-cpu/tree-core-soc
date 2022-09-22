@@ -83,16 +83,14 @@ uint8_t bit_reverse(uint8_t val)
 int main()
 {
     putstr("try to press any key (keyboard)...\n");
-    uint8_t tmp, key_val;
+    uint8_t kdb_code, kdb_val;
     while (1)
     {
-        tmp = PS2_REG_RB;
-        if (tmp)
+        kdb_code = PS2_REG_RB;
+        if (kdb_code)
         {
-            key_val = bit_reverse(tmp);
-            // char s[16] = "";
-            // putstr(strcat(itoa(bit_reverse(tmp), s, 16), "\n"));
-            printf("Got  (kbd): %s (%x)\n", names(key_val), key_val);
+            kdb_val = bit_reverse(kdb_code);
+            printf("Got  (kbd): %s (%x)\n", names(kdb_val), kdb_val);
         }
     }
 
