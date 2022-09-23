@@ -37,7 +37,7 @@ module ps2(
     reg [7:0] fifo[7:0];
     reg [2:0] w_ptr, r_ptr;
     reg [9:0] buffer;
-    reg [10:0] fake_dat;
+    // reg [10:0] fake_dat;
     reg [3:0] count;
     reg [2:0] ps2_clk_sync;
     always @(posedge clock) begin
@@ -47,25 +47,31 @@ module ps2(
     always @(posedge clock) begin
         if (!resetn) begin
             count <= 0; w_ptr <= 0; r_ptr <= 0;
-            fake_dat <= 11'b11101110000;
+            // fake_dat <= 11'b11101110000;
         end
         else begin
             if (sampling) begin
                 if (count == 4'd10) begin // cond check to filtrate unactive sign
                     if ((buffer[0] == 0) && // start bit
-                        // (ps2_dat) && // stop bit
-                        (fake_dat[count]) && // stop bit
+                        (ps2_dat) && // stop bit
+                        // (fake_dat[count]) && // stop bit
                         (^buffer[9:1])) begin // odd parity
                         fifo[w_ptr] <= buffer[8:1]; // kbd scan code
                         // $display("fifo[w_ptr]: %0h", buffer[8:1]);
+                        // $display("count: %d dat: %b", count, ps2_dat);
+                        // $display("w_ptr: %d", w_ptr + 3'b1);
                         w_ptr <= w_ptr+3'b1;
                     end
                     count <= 0; // for next
                 end else begin
-                    // buffer[count] <= ps2_dat; // store ps2_data
-                    buffer[count] <= fake_dat[count];
-                    // $display("count: %d dat: %b", count, fake_dat[count]);
-                    count <= count + 3'b1;
+                    buffer[count] <= ps2_dat; // store ps2_data
+                    // buffer[count] <= fake_dat[count];
+                    // $display("count: %d dat: %b", count, ps2_dat);
+                    // NOTE: hack for some no std dat
+                    if (count == 4'b0 && ps2_dat == 1'b1)
+                        count <= 4'b0;
+                    else
+                        count <= count + 3'b1;
                 end
             end
         end
