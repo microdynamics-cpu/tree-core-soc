@@ -2,8 +2,8 @@
 
 import os
 
-APP_NAME = 'muldiv'
-APP_TYPE = 'mem'  # flash, mem, sdram
+APP_NAME = 'kdb'
+APP_TYPE = 'flash'  # flash, mem, sdram
 APP_ARCH = 'riscv64-mycpu'
 APP_ORG_BIN = APP_NAME + '-' + APP_ARCH + '.bin'
 APP_ORG_ELF = APP_NAME + '-' + APP_ARCH + '.elf'
