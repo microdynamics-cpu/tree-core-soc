@@ -2,3 +2,5 @@
 build
 *.log
 *.wave
+*.out
+*.gtkw
