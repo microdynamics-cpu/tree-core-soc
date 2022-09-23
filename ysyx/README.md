@@ -39,7 +39,7 @@ ysyxSoC/ysyx
 同学们执行SoC集成的所有测试任务都可以运行当前目录下的`main.py`完成，我们提供的`main.py`脚本包含有端口命名检查、代码规范检查和Verilator程序编译与仿真测试的全部功能，可以输入`./main.py -h`来获得其支持的功能列表：
 ```sh
 $> ./main.py -h
-usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST] [-r] [-fr] [-su] [-y]
+usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST TEST] [-r] [-fr] [-su] [-y]
 
 OSCPU Season 4 SoC Test
 
@@ -50,8 +50,8 @@ optional arguments:
   -lu, --lint_unused    run code lint with unused check
   -c, --comp            compile core with SoC in normal flash mode
   -fc, --fst_comp       compile core with SoC in fast flash mode
-  -t TEST TEST TEST, --test TEST TEST TEST
-                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv][cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully
+  -t TEST TEST TEST TEST, --test TEST TEST TEST TEST
+                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv] [cmd|gui] [no-wave|wave]. note: some programs dont support gui mode, so need to set right mode carefully
   -r, --regress         run all test in normal flash mode
   -fr, --fst_regress    run all test in fast flash mode
   -su, --submit         submit code and spec to CICD
@@ -100,7 +100,8 @@ optional arguments:
     ```sh
     $> grep -rn "^ *reg " xxx.fir | grep -v "reset =>"
     ```
-    其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。
+    其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。如果上述存在输出，需要按照行号到`xxx.fir`中指定行查看，由于reg的`reset =>`可能会换行，这个换行也会导致命令行输出。所以还需再检查下一行的内容中是否存在`reset =>`。
+
 * 对于Cache来说，需要：
     * 确认ICache和DCache的data array的大小均不大于4KB，总和不大于8KB。
     * 确认ICache和DCache的data array均采用单口RAM。
@@ -132,10 +133,10 @@ optional arguments:
 对代码进行规范检查，并清除报告中的Warning。具体步骤如下：
 * 运行`./main.py -l`，Verilator将会报告除`DECLFILENAME`和`UNUSED`之外所有类别的Warning，你需要修改代码来清理它们。Warning的含义可以参考[Verilator手册的说明](https://veripool.org/guide/latest/warnings.html#list-of-warnings)。
 * 运行`./main.py -lu`，Verilator将会额外报告`UNUSED`类别的Warning，你需要修改代码来尽最大可能清理它们。
-* 若某些`UNUSED`类别的Warning无法清理，需要填写`./lint`目录中的[warning.md](./lint/warning.md)并给出原因，用于向SoC团队和后端设计团队提供参考。其中[warning.md](./lint/warning.md)中已经给出了格式范例，同学们填写时可以自行删除。
+* 若某些`UNUSED`类别的Warning无法清理，或者**存在一些同学们无法自行决定是否可以清除**的Warning时，需要填写`./lint`目录中的[warning.md](./lint/warning.md)并给出原因，用于向SoC团队和后端设计团队提供参考。其中[warning.md](./lint/warning.md)中已经给出了格式范例，同学们填写时可以自行删除。
 >注意：<sup>[[1]](#id_verilator_unopt)</sup>Verilator对于**组合逻辑环**通常会报`UNOPT`或者`UNOPTFLAT`警告，这是因为组合逻辑环需要多次迭代后才能得到最终的结果(收敛)。这两种警告的区别在于，一个是Verilator生成`flatten netlist`前报告的，一个是生成后报告的。虽然Verilator声称忽略这些警告不会影响仿真的正确性，但是也有一种可能是同学们的核内确实存在有组合逻辑环。如果有，很可能是核内有地方写错了。根据我们的经验，大家在写流水线的hazard部分时比较容易写出组合逻辑环。
 
-> 对于Verilator报告的`UNOPT`警告，**某些情况下不一定是真的存在组合逻辑环**。这是因为，出于仿真性能上的考虑，Verilator并不是按信号的每一位来单独计算的，通常会把很多信号放一起计算。**此时如果确定处理器核内确实不存在组合逻辑环的话，可以使用`/* verilator spit_var */`来消除警告，并继续进行下面的测试过程。** 组合逻辑环与UNPOT的具体例子可以参见<sup>[[1]](#id_verilator_unopt)</sup>。
+> 对于Verilator报告的`UNOPT`警告，**某些情况下不一定是真的存在组合逻辑环**。这是因为，出于仿真性能上的考虑，Verilator并不是按信号的每一位来单独计算的，通常会把很多信号放一起计算。**此时如果确定处理器核内确实不存在组合逻辑环的话，可以使用`/* verilator split_var */`来消除警告，并继续进行下面的测试过程。** 组合逻辑环与UNPOT的具体例子可以参见<sup>[[1]](#id_verilator_unopt)</sup>。
 
 ## Verilator仿真(北京时间 2022/10/07 23:59:59前完成)
 > <sup>[[3]](#id_verilator_cycle)</sup>Verilator是一个支持Verilog/SystemVerilog的周期精确(cycle-accurate)的开源仿真器，但是它不能代替Vivado xsim这些事件驱动的仿真器。<sup>[[4]](#id_verilator_intro)</sup>所谓周期精确仿真，是在确定模块输入的情况下，计算出模块在足够长时间后的输出。因此在周期精确仿真中没有延时的概念。可以理解为每次更新都是计算模块在无穷久后处于稳态时的输出。对于CPU这种由一个时钟信号驱动的设计，外层代码(C++代码)只需要通过反复变动时钟信号的值(从0变1，再从1变0)，就能得到每个周期内CPU的状态输出。
@@ -175,6 +176,8 @@ optional arguments:
   // for flash by skipping SPI transfers
   `define FAST_FLASH
   ```
+  > 注意：**事实上同学们不需要真正去添加`FAST_FLASH`宏，因为我们已经添加好了，并且我们已经在`main.py`中维护了自动切换`FAST_FLASH`宏的功能**，这一节只是在给同学们介绍Verilator仿真的过程。并不需要同学们上手修改代码，而下一节[Verilator仿真具体步骤](#verilator仿真具体步骤如下)才是同学们需要实际操作的部分。
+
   具体来说，该模式下spi控制器会直接使用DPI-C函数将需要的程序和数据读到AXI4总线侧，而避免原先`AXI4<--->SPI<--->DPI-C`中的AXI4到SPI协议的转换过程，提高了程序仿真的速度。对于每个同学来说，都需要通过：
   * 直接在flash上运行的程序(位于`./prog/bin/flash`目录下)：
     * hello-flash.bin
@@ -212,10 +215,11 @@ optional arguments:
 * 运行`./main.py -c`就可以编译生成flash正常模式下的仿真可执行文件`emu`，运行`./main.py -fc`可以编译生成flash快速模式下的仿真可执行文件`emu`。为了提高编译速度，可以修改`./sim/Makefile`中`build`的`-j6`选项。
 * 在生成`emu`之后，使用：
     ```sh
-    $> ./main.py -t APP_TYPE APP_NAME SOC_SIM_MODE
+    $> ./main.py -t APP_TYPE APP_NAME SOC_SIM_MODE SOC_WAV_MODE
     ```
-    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。比如运行`./main.py -t flash hello cmd`可以仿真flash模式下的命令行执行环境的hello测试程序。~~运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。~~
-    > 注意：**所有的测试程序只能在一种执行环境下运行，具体在哪个环境下运行见[文档](./prog/README.md)**。
+    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。`SOC_WAV_MODE`的可选值有`no-wave`和`wave`。比如运行`./main.py -t flash hello cmd no-wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且不输出波形。运行`./main.py -t mem hello cmd wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且输出波形，波形文件的路径为`./ysyx/soc.wave`。波形的默认格式是`FST`，FST是GTKWave自己开发的一种二进制波形格式，相比VCD文件体积更小。~~运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。~~
+    > 注意：**所有的测试程序只能在一种执行环境下运行，具体在哪个环境下运行见[文档](./prog/README.md)**。如果需要输出VCD格式的波形文件，只需要在[./sim/Makefile](./sim/Makefile)的开头把`WAVE_FORMAT ?= FST`修改成`WAVE_FORMAT ?= VCD`，然后重新编译即可。**需要强调的一点是使用`wave`选项开启波形输出后，程序运行时间会变长，如果程序没有跑出结果就结束的话，请自行修改下面小节介绍的"预设运行时间"。**
+
 * 运行`./main.py -r`和`./main.py -fr`就可以依次运行flash正常模式与快速模式的回归测试，回归测试只测试在`cmd`执行环境下的程序，`gui`执行环境下的程序不进行回归测试。
 * 在测试过程中我们对于每个测试都设置了**预设运行时间**，当程序超过**预设运行时间**后会自行停止运行，同学们可以修改`./main.py`中的：
     ```python
@@ -230,7 +234,6 @@ optional arguments:
 >注意：此处提交是为了尽快运行综合流程并发现新问题，此后可以继续调试处理器核的实现。
 
 在接入ysyxSoC本框架并完成上述所有测试后，可以开始代码提交流程。提交前请确保所有触发器可复位。具体需要准备的工作如下：
-* 将difftest成功运行指令集测试的截图文件`reg-test.png`放置于`./submit`目录下，截图不必包含所有的结果输出，但是必须包含使用date命令输出的当前时间。
 * 将成功运行本框架的flash正常模式`rtthread-mem.bin`的截图文件`rtthread-mem.png`放置于`./submit`目录下。
 * 填写`./submit`目录下的cache规格文档[cache_spec.md](./submit/cache_spec.md)。
 * 确认已经根据代码规范检查并在`./lint`目录下填写完[warning.md](./lint/warning.md)。
@@ -240,7 +243,7 @@ optional arguments:
   > 注意：除了clone的`./submit`的gitee仓库外，不要在`./submit`中添加额外的文件夹，因为提交脚本是通过`os.path.isdir()`来自动确定本地clone的仓库名字的，如果`./submit`中存在多个文件夹，则程序无法分辨哪个是本地clone的仓库了。
 * 将自己仓库的`HTTPS格式的URL`和`ysyx_学号后六位`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
 
-> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://github.com/OSCPU/ysyx_submit/blob/ysyx4/README.md)。
+> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://gitee.com/OSCPU/ysyx_submit/blob/ysyx4)。
 
 
 ## 协助SoC团队在流片仿真环境中启动RT-Thread(北京时间 2022/11/07 23:59:59前完成)
@@ -308,8 +311,10 @@ optional arguments:
 * UART16550 (来源于OpenCores, 已在计算所团队的项目中经过流片验证)。
 * SPI控制器 (来源于OpenCores, 已在计算所团队的项目中经过流片验证)。
 * SoC集成 (基于diplomacy DSL实现)。
-* 感谢[李国旗(ysyx_22040228)](https://github.com/xunqianxun)同学的对接测试，李国旗帮忙测试出flash版本乘除法测试的访存宽度bug，总结了AXI调试过程中的经验。在介绍本框架时也是使用李国旗的核进行举例的。
+* 感谢[李国旗(ysyx_22040228)](https://github.com/xunqianxun)同学的对接测试，李国旗帮忙测试出flash版本乘除法测试的访存宽度bug，总结了AXI调试过程中的经验。在介绍本框架时也是使用李国旗同学的核进行举例的。
 * 感谢[郑永煜(ysyx_22040450)](./)同学对代码规范检查脚本提出的修改意见。
+* 感谢[万子琦(ysyx_22040698)](./)同学对README.md中的错别字的提示。
+* 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误和提交脚本换行的问题。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>

@@ -5,7 +5,8 @@ import argparse
 
 stud_id = '040228'  # the last six digits of the student ID
 app_type = ['flash', 'mem']
-app = [('hello', 40), ('memtest', 70), ('rtthread', 450), ('muldiv', 60)]
+app = [('hello', 40), ('memtest', 70), ('rtthread', 450), ('muldiv', 60),
+       ('kdb', 1000)]
 
 
 def run_stand_check():
@@ -42,11 +43,20 @@ def run_test(val):
                 cmd = 'make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' + j[
                     0] + ' SOC_SIM_TIME=' + str(j[1])
                 if val[2] == 'gui' or val[2] == 'cmd':
-                    cmd += ' SOC_SIM_MODE=' + val[2] + ' test'
-                    print(cmd)
+                    cmd += ' SOC_SIM_MODE=' + val[2]
                 else:
                     print('error run mode, need to enter "cmd" or "gui"')
                     return
+
+                if val[3] == 'no-wave' or val[3] == 'wave':
+                    if (val[3] == 'wave'):
+                        cmd += ' SOC_WAV_MODE=-d'
+                else:
+                    print('error wave mode, need to enter "no-wave" or "wave"')
+                    return
+
+                cmd += ' test'
+                # print(cmd)
                 os.system(cmd)
 
 
@@ -95,9 +105,10 @@ parser.add_argument('-fc',
 parser.add_argument(
     '-t',
     '--test',
-    help='Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv]' +
-    '[cmd|gui]. note: some programs dont support gui mode, so need to set right mode carefully',
-    nargs=3)
+    help='Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv] ' +
+    '[cmd|gui] [no-wave|wave]. note: some programs dont support gui mode,' +
+    ' so need to set right mode carefully',
+    nargs=4)
 
 parser.add_argument('-r',
                     '--regress',

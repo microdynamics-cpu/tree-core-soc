@@ -5,7 +5,7 @@ import sys
 core_id = sys.argv[1:2][0]
 
 file_list = [
-    'reg-test.png', 'rtthread-loader.png', 'cache_spec.md',
+    'rtthread-mem.png', 'cache_spec.md',
     '../lint/warning.md', 'ysyx_' + core_id + '.pdf',
     '../soc/' + 'ysyx_' + core_id + '.v'
 ]
@@ -27,7 +27,9 @@ if all_exist:
 
     for v in file_list:
         os.system('cp ' + v + ' ./' + repo_name)
-        os.chdir('./' + repo_name)
-        os.system('git add .')
-        os.system('git commit -m "dc & vcs"')
-        os.system('git push')
+
+    os.chdir('./' + repo_name)
+    # os.system('git add .')
+    # os.system('git commit -m "dc & vcs"')
+    # os.system('git push')
+    os.chdir('../')

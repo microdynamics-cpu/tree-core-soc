@@ -1,3 +1,6 @@
 !*.v
 build
 *.log
+*.wave
+*.out
+*.gtkw
