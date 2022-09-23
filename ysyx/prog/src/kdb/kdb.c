@@ -65,35 +65,32 @@ char *names(uint8_t val)
     case 0x4A: return "SLASH"; break;
     case 0x58: return "CAPSLOCK"; break;
     default:
-        printf("%d val not support!!\n", val);
+        printf("%x val not support!!\n", val);
         return " ";
         break;
     }
     // clang-format on
 }
 
-uint8_t bit_reverse(uint8_t val)
-{
-    val = ((val & 0x55) << 1) | ((val >> 1) & 0x55);
-    val = ((val & 0x33) << 2) | ((val >> 2) & 0x33);
-    val = ((val & 0x0F) << 4) | ((val >> 4) & 0x0F);
-    return val;
-}
+// uint8_t bit_reverse(uint8_t val)
+// {
+    // val = ((val & 0x55) << 1) | ((val >> 1) & 0x55);
+    // val = ((val & 0x33) << 2) | ((val >> 2) & 0x33);
+    // val = ((val & 0x0F) << 4) | ((val >> 4) & 0x0F);
+    // return val;
+// }
 
 int main()
 {
     putstr("try to press any key (keyboard)...\n");
-    uint8_t kdb_code, kdb_val;
+    uint8_t kdb_code;
     while (1)
     {
         kdb_code = PS2_REG_RB;
         if (kdb_code)
         {
-            kdb_val = bit_reverse(kdb_code);
-            printf("Got  (kbd): %s (%x)\n", names(kdb_val), kdb_val);
+            printf("Got  (kbd): %s (%x)\n", names(kdb_code), kdb_code);
         }
     }
-
-    putstr("all tests passed!!\n");
     return 0;
 }

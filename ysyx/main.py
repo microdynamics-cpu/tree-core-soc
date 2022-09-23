@@ -6,7 +6,7 @@ import argparse
 stud_id = '040228'  # the last six digits of the student ID
 app_type = ['flash', 'mem']
 app = [('hello', 40), ('memtest', 70), ('rtthread', 450), ('muldiv', 60),
-       ('kdb', 40)]
+       ('kdb', 1000)]
 
 
 def run_stand_check():
