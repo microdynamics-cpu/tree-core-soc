@@ -2,9 +2,14 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
+#ifdef STD_RES
 // screen res
 #define VGA_H_RES 640
 #define VGA_V_RES 480
+#else
+#define VGA_H_RES 400
+#define VGA_V_RES 300
+#endif
 
 // for SDL texture
 typedef struct Pixel
@@ -491,10 +496,10 @@ public:
             kdb_read(0x00);
         }
 
-        SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
-        SDL_RenderClear(rdr);
-        SDL_RenderCopy(rdr, txr, NULL, NULL);
-        SDL_RenderPresent(rdr);
+        // SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
+        // SDL_RenderClear(rdr);
+        // SDL_RenderCopy(rdr, txr, NULL, NULL);
+        // SDL_RenderPresent(rdr);
         frameCnt++;
         return true;
     }
