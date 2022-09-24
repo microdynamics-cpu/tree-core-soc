@@ -1,10 +1,10 @@
-// #include <unistd.h>
 #include <chrono>
 #include <iostream>
 #include <string>
 namespace chrono = std::chrono;
 
 #include "cxxopts.hpp"
+#include "rang.hpp"
 #include "MediaWindow.hpp"
 #ifdef DUMP_WAVE_VCD
 #include <verilated_vcd_c.h>
@@ -28,7 +28,7 @@ void sig_handler(int signo)
 
 void env_init()
 {
-    std::cout << "Emulator compiled at " << __DATE__ << ", " << __TIME__ << std::endl;
+    std::cout << rang::fg::magenta << "Emulator compiled at " << __DATE__ << ", " << __TIME__ << rang::fg::reset << std::endl;
     if (signal(SIGINT, sig_handler) == SIG_ERR)
     {
         std::cout << "can't catch SIGINT" << std::endl;
@@ -58,11 +58,11 @@ public:
         startTime = chrono::system_clock::now();
         if (args.image == "")
         {
-            std::cout << "Image file unspecified. Use -i to provide the image of flash" << std::endl;
+            std::cout << rang::fg::red << "Image file unspecified. Use -i to provide the image of flash" << rang::fg::reset << std::endl;
             exit(1);
         }
 
-        std::cout << "Initializing flash with " << args.image << " ..." << std::endl;
+        std::cout << rang::fg::green << "Initializing flash with " << args.image << " ..." << rang::fg::reset << std::endl;
         flash_init(args.image.c_str());
 
         if (args.simMode == "gui")
@@ -81,7 +81,7 @@ public:
             wavePtr = new VerilatedFstC;
 #endif
             Verilated::traceEverOn(true);
-            std::cout << "`dump-wave` enabled, waves will be written to \"soc.wave\"." << std::endl;
+            std::cout << rang::fg::yellow << "`dump-wave` enabled, waves will be written to \"soc.wave\"." << rang::fg::reset << std::endl;
             dutPtr->trace(wavePtr, 1);
             wavePtr->open("soc.wave");
             wavePtr->dump(0);
@@ -102,7 +102,7 @@ public:
 
     void reset()
     {
-        std::cout << "Initializing and resetting DUT ..." << std::endl;
+        std::cout << rang::fg::yellow << "Initializing and resetting DUT ..." << rang::fg::reset << std::endl;
         dutPtr->reset = 1;
         for (int i = 0; i < 10; i++)
         {
@@ -132,7 +132,7 @@ public:
     void state()
     {
         auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - startTime);
-        std::cout << "Simulation " << cycle << " cycles in " << elapsed.count() << "s" << std::endl;
+        std::cout << rang::fg::yellow << "Simulation " << cycle << " cycles in " << elapsed.count() << "s" << rang::fg::reset << std::endl;
     }
 
     bool getArriveTime()
