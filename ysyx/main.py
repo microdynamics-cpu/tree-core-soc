@@ -5,8 +5,8 @@ import argparse
 
 stud_id = '040228'  # the last six digits of the student ID
 app_type = ['flash', 'mem']
-app = [('hello', 40), ('memtest', 70), ('rtthread', 450), ('muldiv', 60),
-       ('kdb', 1000)]
+app = [('hello', 40, 'cmd'), ('memtest', 70, 'cmd'), ('rtthread', 450, 'cmd'),
+       ('muldiv', 60, 'cmd'), ('kdb', 1000, 'gui')]
 
 
 def run_stand_check():
@@ -49,7 +49,7 @@ def run_test(val):
                     return
 
                 if val[3] == 'no-wave' or val[3] == 'wave':
-                    if (val[3] == 'wave'):
+                    if val[3] == 'wave':
                         cmd += ' SOC_WAV_MODE=-d'
                 else:
                     print('error wave mode, need to enter "no-wave" or "wave"')
@@ -63,9 +63,10 @@ def run_test(val):
 def run_reg_test():
     for i in app_type:
         for j in app:
-            os.system('make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' +
-                      j[0] + ' SOC_SIM_TIME=' + str(j[1]) +
-                      ' SOC_SIM_MODE=cmd test')
+            if j[2] == 'cmd':
+                os.system('make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' +
+                          j[0] + ' SOC_SIM_TIME=' + str(j[1]) +
+                          ' SOC_SIM_MODE=cmd test')
 
 
 def submit_code():
