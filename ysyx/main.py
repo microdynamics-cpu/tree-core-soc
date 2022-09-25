@@ -43,7 +43,11 @@ def run_test(val):
                 cmd = 'make -C sim SOC_APP_TYPE=' + i + ' SOC_APP_NAME=' + j[
                     0] + ' SOC_SIM_TIME=' + str(j[1])
                 if val[2] == 'gui' or val[2] == 'cmd':
-                    cmd += ' SOC_SIM_MODE=' + val[2]
+                    if val[2] == j[2]:
+                        cmd += ' SOC_SIM_MODE=' + val[2]
+                    else:
+                        print(j[0] + ' dont support ' + val[2] + ' mode')
+                        return
                 else:
                     print('error run mode, need to enter "cmd" or "gui"')
                     return
