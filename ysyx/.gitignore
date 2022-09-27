@@ -5,3 +5,4 @@ build
 *.out
 *.gtkw
 ysyx_*.v
+rt-thread
