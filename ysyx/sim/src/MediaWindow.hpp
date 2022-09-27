@@ -324,18 +324,18 @@ public:
         // NOTE:  need to handle excpt cond
         if (!win)
         {
-            printf("Window creation failed: %s\n", SDL_GetError());
+            std::cout << "Window creation failed: " << SDL_GetError() << std::endl;
         }
         rdr = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
         if (!rdr)
         {
-            printf("Renderer creation failed: %s\n", SDL_GetError());
+            std::cout << "Renderer creation failed: " << SDL_GetError() << std::endl;
         }
         txr = SDL_CreateTexture(rdr, SDL_PIXELFORMAT_RGBA8888,
                                 SDL_TEXTUREACCESS_TARGET, VGA_H_RES, VGA_V_RES);
         if (!txr)
         {
-            printf("Texture creation failed: %s\n", SDL_GetError());
+            std::cout << "Texture creation failed: " << SDL_GetError() << std::endl;
         }
     }
 
@@ -496,10 +496,15 @@ public:
             kdb_read(0x00);
         }
 
-        // SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
-        // SDL_RenderClear(rdr);
-        // SDL_RenderCopy(rdr, txr, NULL, NULL);
-        // SDL_RenderPresent(rdr);
+        // NOTE: fake flush oper
+        if (frameCnt % 120000 == 0)
+        {
+            SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
+            SDL_RenderClear(rdr);
+            SDL_RenderCopy(rdr, txr, NULL, NULL);
+            SDL_RenderPresent(rdr);
+        }
+
         frameCnt++;
         return true;
     }
