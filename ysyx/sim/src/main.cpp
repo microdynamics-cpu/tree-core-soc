@@ -4,7 +4,8 @@
 #include <SDL2/SDL.h>
 #include "cxxopts.hpp"
 
-#include <Emulator.hpp>
+#include "rang.hpp"
+#include "Emulator.hpp"
 
 #include "verilated.h"
 
@@ -48,7 +49,7 @@ int main(int argc, char *argv[])
     }
 
     emu = new Emulator(res);
-    std::cout << "[verilator]start simulating ..." << std::endl;
+    std::cout << rang::fg::yellow << "[verilator]start simulating ..." << rang::fg::reset << std::endl;
     emu->runSim();
 
     return 0;

@@ -98,7 +98,7 @@ optional arguments:
 * 所有触发器都需要带复位端，使其复位后带初值。
     * **Chisel福利：可以通过以下命令对编译生成的`.fir`文件进行扫描，找出不带复位端的寄存器：**
     ```sh
-    $> grep -rn "^ *reg " xxx.fir | grep -v "reset =>"
+    $> grep -rn "^ *reg " -A1 myCPU.fir | sed ":a;N;s/:\n//g;ba" | sed ":a;N;s/--\n//g;ba" | grep -v "reset =>"
     ```
     其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。如果上述存在输出，需要按照行号到`xxx.fir`中指定行查看，由于reg的`reset =>`可能会换行，这个换行也会导致命令行输出。所以还需再检查下一行的内容中是否存在`reset =>`。
 
@@ -315,6 +315,7 @@ optional arguments:
 * 感谢[郑永煜(ysyx_22040450)](./)同学对代码规范检查脚本提出的修改意见。
 * 感谢[万子琦(ysyx_22040698)](./)同学对README.md中的错别字的提示。
 * 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误和提交脚本换行的问题。
+* 感谢[卢琨(ysyx_22041812)](./)同学提出一个更好对chisel中的寄存器进行复位检查的命令。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>

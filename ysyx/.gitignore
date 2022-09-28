@@ -4,3 +4,5 @@ build
 *.wave
 *.out
 *.gtkw
+ysyx_*.v
+rt-thread
