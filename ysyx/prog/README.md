@@ -20,20 +20,23 @@ ysyxSoC/ysyx/prog
 │   └── mem                      # 通过loader加载并运行的程序，需要实现fence.i指令才能运行
 │       ├── hello-mem.bin
 │       ├── hello-mem.elf
+│       ├── kdb-flash.bin
+│       ├── kdb-flash.elf
 │       ├── memtest-mem.bin
 │       ├── memtest-mem.elf
 │       ├── muldiv-mem.bin
 │       ├── muldiv-mem.elf
-│       └── rtthread-mem.bin
+│       ├── rtthread-mem.bin
+│       └── rtthread-mem.elf
 ├── README.md                    # 本文档
 └── src                          # 测试程序的参考代码，用户无需自行编译
     ├── ftom                     # 简单加载器的实现
     ├── hello                    # 输出Hello字符串
-    ├── kdb                      # ps2输入测试
+    ├── kdb                      # 键盘输入测试
     ├── loader                   # flash加载器的参考实现
     ├── memtest                  # 对8KB数组进行读写测试
     ├── muldiv                   # 乘除法指令测试
-    ├── rt-thread                # RT-Thread编译方式说明
+    ├── rtthread                 # RT-Thread编译方式说明
     └── run.py                   # 程序编译脚本
 ```
 
@@ -55,16 +58,31 @@ all tests passed!!
 ```
 
 ### rtthread
-进行复杂的应用程序测试，综合测试中断和Trap等功能的正确性，参考输出如下:
+进行复杂的应用程序测试，综合测试定时器中断和Trap等功能的正确性，测试程序会创建线程`thread1`和`thread2`，线程中会输出当前的计数值，并在输出后进行一次40ms的阻塞延时。当线程运行6次后会退出并打印结果。线程发生阻塞延时会被挂起，此时切换线程会进行Trap操作。由于两个线程的优先级和时间片都设置成一样的，所以两个线程会**等时交替执行**，从输出结果上看就是两个线程打印计数值是同步的。rtthread中线程时间片值的递减是按照系统定时器的中断周期为单位进行的，而rtthread的系统定时器是由我们同学们处理器核上的硬件定时器中断实现的。注意`msh />`的输出位置是不固定的，具体的参考输出如下:
 ```sh
-heap: [0x8000d486 - 0x8640d468]
+heap: [0x8000d4a8 - 0x8640d4a8]
 
  \ | /
 - RT -     Thread Operating System
- / | \     4.0.4 build Aug 31 2021
+ / | \     4.0.4 build Sep 28 2022
  2006 - 2021 Copyright by rt-thread team
 Hello RISC-V!
-msh />
+thread1 count: 0
+thread2 count: 0
+thread1 count: 1
+thread2 count: 1
+thread1 count: 2
+thread2 count: 2
+thread1 count: 3
+msh />thread2 count: 3
+thread1 count: 4
+thread2 count: 4
+thread1 count: 5
+thread2 count: 5
+thread1 count: 6
+thread2 count: 6
+thread1 exit
+thread2 exit
 ```
 ### muldiv
 进行乘除法指令测试，该程序包含三个数值算法测试，分别为欧几里得算法求gcd，矩阵快速幂取模求斐波那契数列和快速数论变换求多项式乘法。该程序会测试乘法，取模等操作的正确性。由于最后一项快速数论变换求多项式乘法需要64位访存操作，然而flash不支持4字节以上的读写请求，所以flash下的`muldiv`不支持最后一项多项式乘法的测试，故flash下的参考输出如下：
