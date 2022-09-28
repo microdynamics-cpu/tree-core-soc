@@ -3,7 +3,7 @@
 import os
 
 APP_NAME = 'rtthread'
-APP_TYPE = 'flash'  # flash, mem, sdram
+APP_TYPE = 'mem'  # flash, mem, sdram
 APP_ARCH = 'riscv64-mycpu'
 APP_ORG_BIN = APP_NAME + '-' + APP_ARCH + '.bin'
 APP_ORG_ELF = APP_NAME + '-' + APP_ARCH + '.elf'
@@ -58,8 +58,16 @@ elif APP_TYPE == 'mem':
     chg_ld_script(APP_TYPE)
     chg_ld_addr('0x80000000')
     os.chdir(APP_NAME)
-    os.system('make ARCH=' + APP_ARCH)
-    os.system('cp build/' + APP_ORG_BIN + ' ' + HOME_DIR + '/loader')
+    if APP_NAME != 'rtthread':
+        os.system('make ARCH=' + APP_ARCH)
+        os.system('cp build/' + APP_ORG_BIN + ' ' + HOME_DIR + '/loader')
+
+    else:
+        os.system('cp main.c rt-thread/bsp/qemu-riscv-virt64/applications/')
+        os.chdir('rt-thread/bsp/qemu-riscv-virt64/')
+        os.system("sed -i 's/^FLASH = 1/FLASH = 0/' rtconfig.py")
+        os.system('scons')
+        os.system('cp rtthread.bin ' + HOME_DIR + '/loader/' + APP_ORG_BIN)
 
     chg_ld_script('flash')
     chg_ld_addr('0x30000000')
@@ -68,5 +76,8 @@ elif APP_TYPE == 'mem':
               APP_ARCH + "\.bin/' " + "Makefile")
     os.system('make ARCH=' + APP_ARCH)
 
-if APP_NAME != 'rtthread':
+
+if APP_NAME != 'rtthread' and APP_TYPE == 'flash':
+    copy_oper(APP_TYPE)
+elif APP_TYPE == 'mem':
     copy_oper(APP_TYPE)
