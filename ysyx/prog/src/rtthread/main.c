@@ -17,20 +17,26 @@
 
 static rt_thread_t tid1 = RT_NULL;
 static rt_thread_t tid2 = RT_NULL;
+// static char out_buf[16];
+// extern char *itoa(unsigned int val, char *str, int base);
+
 static void low_prior_entry(void *parameter)
 {
-    rt_uint32_t count = 0;
+    rt_uint32_t count = 0, id;
     while (1)
     {
-        rt_kprintf("thread%d count: %d\n", (rt_uint32_t)parameter, count++);
-        rt_thread_mdelay(100);
+        id = (rt_uint32_t)parameter;
+        // itoa(count++, out_buf, 10);
+        if(count >= 7) break;
+        rt_kprintf("thread%u count: %u\n", id, count++);
+        rt_thread_mdelay(40);
     }
+    rt_kprintf("thread%u exit\n", id);
 }
 
-ALIGN(RT_ALIGN_SIZE)
-static char thread3_stack[1024];
-static struct rt_thread thread3;
-
+// ALIGN(RT_ALIGN_SIZE)
+// static char thread3_stack[1024];
+// static struct rt_thread thread3;
 static void high_prior_entry(void *param)
 {
     rt_uint32_t count = 0;
