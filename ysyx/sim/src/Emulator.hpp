@@ -15,6 +15,8 @@ namespace chrono = std::chrono;
 #include <VysyxSoCFull.h>
 
 static int signal_received = 0;
+static std::string app_name[] = {"kdb", "vga"};
+
 void sig_handler(int signo)
 {
     if (signal_received != 0)
@@ -61,6 +63,8 @@ public:
             std::cout << rang::fg::red << "Image file unspecified. Use -i to provide the image of flash" << rang::fg::reset << std::endl;
             exit(1);
         }
+
+        args.appName = getAppName(args.image);
 
         std::cout << rang::fg::green << "Initializing flash with " << args.image << " ..." << rang::fg::reset << std::endl;
         flash_init(args.image.c_str());
@@ -135,6 +139,18 @@ public:
         std::cout << rang::fg::yellow << "Simulation " << cycle << " cycles in " << elapsed.count() << "s" << rang::fg::reset << std::endl;
     }
 
+    std::string getAppName(std::string str)
+    {
+        for(auto v : app_name)
+        {
+            if (str.find(v) != std::string::npos)
+            {
+                return v;
+            }
+        }
+        return "";
+    }
+
     bool getArriveTime()
     {
         auto elapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - startTime);
@@ -180,6 +196,7 @@ private:
         unsigned long simTime = -1UL;
         std::string simMode = "";
         std::string image = "";
+        std::string appName = "";
     } args;
 
 #ifdef DUMP_WAVE_VCD
