@@ -3,6 +3,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#include "rang.hpp"
+
+// #define STD_RES
+
 #ifdef STD_RES
 // screen res
 #define VGA_H_RES 640
@@ -308,11 +312,11 @@ public:
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0)
         {
-            std::cout << "SDL could not be initialized: " << SDL_GetError();
+            std::cout << rang::fg::red << "SDL could not be initialized: " << SDL_GetError() << rang::fg::reset << std::endl;
         }
         else
         {
-            std::cout << "SDL video system is ready to go" << std::endl;
+            std::cout << rang::fg::yellow << "SDL video system is ready to go" << rang::fg::reset << std::endl;
         }
 
         win = SDL_CreateWindow("PS/2 & VGA Test",
@@ -325,18 +329,18 @@ public:
         // NOTE:  need to handle excpt cond
         if (!win)
         {
-            std::cout << "Window creation failed: " << SDL_GetError() << std::endl;
+            std::cout << rang::fg::red << "Window creation failed: " << SDL_GetError() << rang::fg::reset << std::endl;
         }
         rdr = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
         if (!rdr)
         {
-            std::cout << "Renderer creation failed: " << SDL_GetError() << std::endl;
+            std::cout << rang::fg::red << "Renderer creation failed: " << SDL_GetError() << rang::fg::reset << std::endl;
         }
         txr = SDL_CreateTexture(rdr, SDL_PIXELFORMAT_RGBA8888,
                                 SDL_TEXTUREACCESS_TARGET, VGA_H_RES, VGA_V_RES);
         if (!txr)
         {
-            std::cout << "Texture creation failed: " << SDL_GetError() << std::endl;
+            std::cout << rang::fg::red << "Texture creation failed: " << SDL_GetError() << rang::fg::reset << std::endl;
         }
     }
 
@@ -365,6 +369,40 @@ public:
                 p->g = 0x00;
                 p->r = 0x00;
             }
+    }
+
+    void initImage()
+    {
+        int flags = IMG_INIT_PNG;
+        int initFlags = IMG_Init(flags);
+        if ((initFlags & flags) != flags)
+        {
+            std::cout << rang::fg::red << "SDL2 format not available" << rang::fg::reset << std::endl;
+            return;
+        }
+
+        char *imgPath = SDL_GetBasePath();
+        strcat(imgPath, "../asset/ysyx_logo.png");
+        std::cout << imgPath << std::endl;
+        srf = IMG_Load(imgPath);
+        if (!srf)
+        {
+            std::cout << rang::fg::red << "Image not loaded..." << rang::fg::reset << std::endl;
+            return;
+        }
+
+        txr = SDL_CreateTextureFromSurface(rdr, srf);
+        SDL_SetRenderDrawColor(rdr, 0, 0, 0xFF, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(rdr);
+        SDL_RenderCopy(rdr, txr, NULL, NULL);
+        SDL_RenderPresent(rdr);
+        appInit = true;
+        return;
+    }
+
+    void initVideo()
+    {
+        appInit = true;
     }
 
     // now dont support break code
@@ -463,7 +501,7 @@ public:
         }
     }
 
-    bool step()
+    bool step(std::string app)
     {
         SDL_Event event;
         if (SDL_PollEvent(&event))
@@ -497,25 +535,40 @@ public:
             kdb_read(0x00);
         }
 
-        // NOTE: fake flush oper
-        if (frameCnt % 120000 == 0)
+        if (appInit)
         {
-            SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
-            SDL_RenderClear(rdr);
-            SDL_RenderCopy(rdr, txr, NULL, NULL);
-            SDL_RenderPresent(rdr);
+            if (app == "kdb")
+            {
+                // do nothing!
+            }
+            else if (app == "vga")
+            {
+                // NOTE: fake flush oper
+                if (frameCnt % 120000 == 0)
+                {
+                    SDL_UpdateTexture(txr, NULL, fb, VGA_H_RES * sizeof(Pixel));
+                    SDL_RenderClear(rdr);
+                    SDL_RenderCopy(rdr, txr, NULL, NULL);
+                    SDL_RenderPresent(rdr);
+                }
+            }
         }
 
         frameCnt++;
         return true;
     }
 
-    void release()
+    void release(std::string app)
     {
         SDL_DestroyTexture(txr);
         SDL_DestroyRenderer(rdr);
         SDL_DestroyWindow(win);
         SDL_Delay(500);
+        if(appInit && app == "kdb")
+        {
+            SDL_FreeSurface(srf);
+            IMG_Quit();
+        }
         SDL_Quit();
     }
 
@@ -523,9 +576,11 @@ private:
     SDL_Window *win = nullptr;
     SDL_Renderer *rdr = nullptr;
     SDL_Texture *txr = nullptr;
+    SDL_Surface *srf = nullptr;
     clock_t start;
     uint8_t kdbCode[6] = {0};
     Pixel fb[VGA_H_RES * VGA_V_RES];
     uint64_t startTick = 0;
     uint64_t frameCnt = 0;
+    bool appInit = false;
 };
