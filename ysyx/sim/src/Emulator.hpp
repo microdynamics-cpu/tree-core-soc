@@ -141,7 +141,7 @@ public:
 
     std::string getAppName(std::string str)
     {
-        for(auto v : app_name)
+        for (auto v : app_name)
         {
             if (str.find(v) != std::string::npos)
             {
@@ -166,18 +166,26 @@ public:
         {
             winPtr->initFPS();
             winPtr->initFB();
+            if (args.appName == "kdb")
+            {
+                winPtr->initImage();
+            }
+            else if (args.appName == "vga")
+            {
+                winPtr->initVideo();
+            }
         }
 
         while (!Verilated::gotFinish() && signal_received == 0 && !getArriveTime())
         {
             step();
-            if (winPtr && !(winPtr->step()))
+            if (winPtr && !(winPtr->step(args.appName)))
                 break;
         }
         if (winPtr)
         {
             winPtr->calcFPS();
-            winPtr->release();
+            winPtr->release(args.appName);
         }
 
         dutPtr->final();
