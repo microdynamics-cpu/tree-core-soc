@@ -16,6 +16,7 @@ BUILD_DIR         := $(SIM_PATH)/build
 SOC_CSRC_HOME     += $(SIM_PATH)/src
 SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/spiFlash
 SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/kdb
+SOC_CSRC_LIB_HOME += $(ROOT_PATH)/perip/screen
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_HOME) -name "*.cpp")
 SOC_CXXFILES      += $(shell find $(SOC_CSRC_LIB_HOME) -name "*.cpp")
 
@@ -33,7 +34,7 @@ SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/perip/spi/rtl
 SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/perip/sdram/rtl
 SOC_VSRC_INCLPATH += -I$(ROOT_PATH)/perip/sdram/tb
 SOC_CSRC_INCLPATH += -I$(SOC_CSRC_HOME)
-SOC_CSRC_INCLPATH += -I$(SOC_CSRC_LIB_HOME)
+SOC_CSRC_INCLPATH += $(foreach val, $(SOC_CSRC_LIB_HOME), -I$(val))
 
 SOC_CXXFLAGS += -std=c++11 -static -Wall $(SOC_CSRC_INCLPATH) -DDUMP_WAVE_$(WAVE_FORMAT)
 SOC_LDFLAGS  += -lSDL2 -lSDL2_image -ldl
