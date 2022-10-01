@@ -336,12 +336,6 @@ public:
         {
             std::cout << rang::fg::red << "Renderer creation failed: " << SDL_GetError() << rang::fg::reset << std::endl;
         }
-        txr = SDL_CreateTexture(rdr, SDL_PIXELFORMAT_RGBA8888,
-                                SDL_TEXTUREACCESS_TARGET, VGA_H_RES, VGA_V_RES);
-        if (!txr)
-        {
-            std::cout << rang::fg::red << "Texture creation failed: " << SDL_GetError() << rang::fg::reset << std::endl;
-        }
     }
 
     void initFPS()
@@ -382,7 +376,7 @@ public:
         }
 
         char *imgPath = SDL_GetBasePath();
-        strcat(imgPath, "../asset/ysyx_logo.png");
+        strcat(imgPath, "../asset/kdb.png");
         std::cout << imgPath << std::endl;
         srf = IMG_Load(imgPath);
         if (!srf)
@@ -397,11 +391,16 @@ public:
         SDL_RenderCopy(rdr, txr, NULL, NULL);
         SDL_RenderPresent(rdr);
         appInit = true;
-        return;
     }
 
     void initVideo()
     {
+        txr = SDL_CreateTexture(rdr, SDL_PIXELFORMAT_RGBA8888,
+                                SDL_TEXTUREACCESS_TARGET, VGA_H_RES, VGA_V_RES);
+        if (!txr)
+        {
+            std::cout << rang::fg::red << "Texture creation failed: " << SDL_GetError() << rang::fg::reset << std::endl;
+        }
         appInit = true;
     }
 
@@ -564,7 +563,7 @@ public:
         SDL_DestroyRenderer(rdr);
         SDL_DestroyWindow(win);
         SDL_Delay(500);
-        if(appInit && app == "kdb")
+        if (appInit && app == "kdb")
         {
             SDL_FreeSurface(srf);
             IMG_Quit();
