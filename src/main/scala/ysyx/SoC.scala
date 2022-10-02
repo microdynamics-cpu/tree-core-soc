@@ -49,13 +49,13 @@ class ysyxSoCASIC(implicit p: Parameters) extends LazyModule {
 
   val lps2   = LazyModule(new AXI4PS2(AddressSet.misaligned(0x10003000, 0x1000)))
   // val hvga   = LazyModule(new AXI4VGA(AddressSet.misaligned(0x10002000, 0x1000)))
-  // val hsdram = LazyModule(new AXI4SDRAM(AddressSet.misaligned(0xFC000000L, 0x3FFFFF0)))
+  val hsdram = LazyModule(new AXI4SDRAM(AddressSet.misaligned(0xFC000000L, 0x3FFFFF0)))
 
   List(lspi.node, luart.node).map(_ := apbxbar)
   List(chiplinkNode, apbxbar := AXI4ToAPB()).map(_ := xbar)
   List(lps2.node).map(_ := xbar)
   // List(hvga.node).map(_ := xbar)
-  // List(hsdram.node).map(_ := xbar)
+  List(hsdram.node).map(_ := xbar)
   xbar := cpu.masterNode
 
   override lazy val module = new LazyModuleImp(this) with DontTouch {
@@ -96,9 +96,9 @@ class ysyxSoCASIC(implicit p: Parameters) extends LazyModule {
 
     //expose ps2 and vga slave interface as ports
     val ps2 = IO(chiselTypeOf(lps2.module.io))
-    // val sdram = IO(chiselTypeOf(hsdram.module.io))
+    val sdram = IO(chiselTypeOf(hsdram.module.io))
     ps2 <> lps2.module.io
-    // sdram <> hsdram.module.io
+    sdram <> hsdram.module.io
   }
 }
 
@@ -142,17 +142,8 @@ class ysyxSoCFull(implicit p: Parameters) extends LazyModule {
     kdb.io.clock := clock
     kdb.io.resetn := ~reset.asBool
 
-    // val sdr = Module(new sdr)
-    // sdr.io.Clk   := masic.sdram.clk_o
-    // sdr.io.Cke   := masic.sdram.cke_o
-    // sdr.io.Cs_n  := masic.sdram.cs_o
-    // sdr.io.Ras_n := masic.sdram.ras_o
-    // sdr.io.Cas_n := masic.sdram.cas_o
-    // sdr.io.We_n  := masic.sdram.we_o
-    // sdr.io.Addr  := masic.sdram.addr_o
-    // sdr.io.Ba    := masic.sdram.ba_o
-    // sdr.io.Dq    := masic.sdram.data
-    // sdr.io.Dq := Mux(masic.sdram.data_out_en_o, masic.sdram.data_output_o, masic.sdram.data_input_i)
-    // sdr.io.Dqm   := masic.sdram.dqm_o
+    // sdram
+    val sdr = Module(new sdr_top)
+    sdr.io <> masic.sdram;
   }
 }
