@@ -2,8 +2,8 @@
 
 import os
 
-APP_NAME = 'rtthread'
-APP_TYPE = 'flash'  # flash, mem, sdram
+APP_NAME = 'muldiv'
+APP_TYPE = 'mem'  # flash, mem, sdram
 APP_ARCH = 'riscv64-mycpu'
 APP_ORG_BIN = APP_NAME + '-' + APP_ARCH + '.bin'
 APP_ORG_ELF = APP_NAME + '-' + APP_ARCH + '.elf'
@@ -59,7 +59,7 @@ elif APP_TYPE == 'mem':
     chg_ld_addr('0x80000000')
     os.chdir(APP_NAME)
     if APP_NAME != 'rtthread':
-        os.system('make ARCH=' + APP_ARCH)
+        os.system('make ARCH=' + APP_ARCH + ' LOAD_TYPE=-DMEM_LOAD')
         os.system('cp build/' + APP_ORG_BIN + ' ' + HOME_DIR + '/loader')
 
     else:
