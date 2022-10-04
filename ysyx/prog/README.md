@@ -50,10 +50,12 @@ Hello World!
 ```
 
 ### memtest
-测试AXI4能否正确进行MEM的读写操作，程序会执行MEM的回环测试，参考输出如下:
+测试AXI4能否正确进行MEM和SDRAM的读写操作，程序会执行MEM以及SDRAM的回环测试。其中测试程序会先从MEM地址处写入数值，然后再依次对数值进行assert。然后再将MEM的值拷贝到SDRAM起始地址处并assert。参考输出如下:
 ```sh
 start test...
-all tests prepared
+mem tests prepared
+mem tests passed!
+sdram tests prepared
 all tests passed!!
 ```
 
