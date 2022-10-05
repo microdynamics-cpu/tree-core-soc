@@ -1,4 +1,4 @@
 SRCS = vga.c
-NAME = vga 
+NAME = vga
 
 include $(AM_HOME)/Makefile
