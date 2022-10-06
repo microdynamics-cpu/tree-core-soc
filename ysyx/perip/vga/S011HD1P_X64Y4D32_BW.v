@@ -2,7 +2,7 @@ module S011HD1P_X64Y4D32_BW(
     Q, CLK, CEN, WEN, BWEN, A, D
 );
 parameter Bits = 32;
-parameter Word_Depth = 64;
+parameter Word_Depth = 256;
 parameter Add_Width = 8;
 parameter Wen_Width = 32;
 
@@ -23,7 +23,7 @@ always @(posedge CLK) begin
     if(cen && wen) begin
         ram[A] <= (D & bwen) | (ram[A] & ~bwen);
     end
-    Q <= cen && !wen ? ram[A] : {4{$random}};
+    Q <= cen && !wen ? ram[A] : $random;
 end
 
 endmodule
