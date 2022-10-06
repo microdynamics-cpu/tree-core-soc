@@ -48,15 +48,19 @@ class ysyxSoCASIC(implicit p: Parameters) extends LazyModule {
   ))
 
   val lps2   = LazyModule(new AXI4PS2(AddressSet.misaligned(0x10003000, 0x1000)))
-  // val hvga   = LazyModule(new AXI4VGA(AddressSet.misaligned(0x10002000, 0x1000)))
-  val hsdram = LazyModule(new AXI4SDRAM(AddressSet.misaligned(0xFC000000L, 0x3FFFFF0)))
+  val hvga   = LazyModule(new AXI4VGA(idBits = ChipLinkParam.idBits,
+  AddressSet.misaligned(0x10002000, 0x1000) ++    // slave config
+  AddressSet.misaligned(0x1c000000, 0x13FFFFF0)   // frame buffer
+  ))
+  // val hsdram = LazyModule(new AXI4SDRAM(AddressSet.misaligned(0xFC000000L, 0x3FFFFF0)))
 
   List(lspi.node, luart.node).map(_ := apbxbar)
   List(chiplinkNode, apbxbar := AXI4ToAPB()).map(_ := xbar)
   List(lps2.node).map(_ := xbar)
-  // List(hvga.node).map(_ := xbar)
-  List(hsdram.node).map(_ := xbar)
+  List(hvga.node).map(_ := xbar)
+  // List(hsdram.node).map(_ := xbar)
   xbar := cpu.masterNode
+  // xbar := hvga.masterNode
 
   override lazy val module = new LazyModuleImp(this) with DontTouch {
     // generate delayed reset for cpu, since chiplink should finish reset
@@ -94,11 +98,13 @@ class ysyxSoCASIC(implicit p: Parameters) extends LazyModule {
     uart <> luart.module.uart
     spi <> lspi.module.spi_bundle
 
-    //expose ps2 and vga slave interface as ports
+    //expose ps2, vga and sdram slave interface as ports
     val ps2 = IO(chiselTypeOf(lps2.module.io))
-    val sdram = IO(chiselTypeOf(hsdram.module.io))
+    val vga = IO(chiselTypeOf(hvga.module.io))
+    // val sdram = IO(chiselTypeOf(hsdram.module.io))
     ps2 <> lps2.module.io
-    sdram <> hsdram.module.io
+    vga <> hvga.module.io
+    // sdram <> hsdram.module.io
   }
 }
 
@@ -142,8 +148,13 @@ class ysyxSoCFull(implicit p: Parameters) extends LazyModule {
     kdb.io.clock := clock
     kdb.io.resetn := ~reset.asBool
 
+    // screen
+    val screen = Module(new screen)
+    screen.io.dat <> masic.vga;
+    screen.io.clock := clock
+
     // sdram
-    val sdr = Module(new sdr_top)
-    sdr.io <> masic.sdram;
+    // val sdr = Module(new sdr_top)
+    // sdr.io <> masic.sdram;
   }
 }
