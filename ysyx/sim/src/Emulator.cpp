@@ -64,6 +64,7 @@ Emulator::Emulator(cxxopts::ParseResult &res)
 
     dutPtr = new VysyxSoCFull;
     reset();
+    svSetScope(svGetScopeFromName("TOP.ysyxSoCFull.screen"));
 
     if (args.dumpWave)
     {
@@ -150,6 +151,7 @@ bool Emulator::getArriveTime()
         return false;
 }
 
+extern void dump_gpr();
 void Emulator::runSim()
 {
     if (winPtr)
@@ -171,6 +173,7 @@ void Emulator::runSim()
         step();
         if (winPtr && !(winPtr->step(args.appName)))
             break;
+        dump_gpr();
     }
     if (winPtr)
     {
