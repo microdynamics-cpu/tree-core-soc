@@ -12,8 +12,8 @@ int main()
 {
     uint32_t *prog = (uint32_t *)&app_start;
     uint32_t *pmem = (uint32_t *)&(_appmem_start);
-    putstr("Loading program of size ");
-    printf("%d: expect 128 \'#\'\n", (uint32_t)PROG_SIZE * sizeof(uint32_t));
+    putstr("Loading program of size: ");
+    printf("%d bytes, expect 128 \'#\'\n", (uint32_t)PROG_SIZE * sizeof(uint32_t));
     putstr("Loading.....\n");
     uint32_t step = (uint32_t)(&app_end - &app_start) / 128;
     uint32_t *pre = prog;

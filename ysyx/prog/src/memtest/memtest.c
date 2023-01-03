@@ -37,6 +37,7 @@ int main(const char *args)
         assert(sdram_data[i] == i);
     }
 
+    putstr("sdram tests passed!!\n");
     putstr("all tests passed!!\n");
     return 0;
 }

@@ -4,7 +4,7 @@ NAME = loader
 # Note that the loader should be linked to the start address of flash.
 # You should modify your linking option if you want to build the loader yourself.
 # Then modify BIN_PATH to a binary starting at 0x80000000
-BIN_PATH = muldiv-riscv64-mycpu.bin
+BIN_PATH = kdb-riscv64-mycpu.bin
 ASFLAGS += -DBIN_PATH=\"$(BIN_PATH)\"
 
 include $(AM_HOME)/Makefile
