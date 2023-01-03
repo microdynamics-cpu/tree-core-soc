@@ -81,6 +81,7 @@ optional arguments:
     * 如`module ALU`修改为`module ysyx_040228_ALU`。
     * Chisel福利：我们提供一个[firrtl transform](./utils/AddModulePrefix.scala)来自动添加模块名前缀，使用方法参考[相关说明文档](./utils/README.md)。
 * 对于使用Verilog/SystemVerilog代码实现的处理器核，目前暂时无法进行模块名前缀的自动添加，请手动进行添加。
+* 为CPU内所有的`define`添加前缀`ysyx_学号后六位_`，这是为了避免后端物理设计时出现多个同学的核变量定义重名情况的出现。
 * **将改好的`ysyx_学号后六位.v`，如`ysyx_040228.v`放到的./soc目录下**。
 * 将`main.py`中的`stud_id`**设置为学号的后六位**，比如学号为22040228的同学，设置`stud_id='040228'`。
 > 注意：使用Verilog/SystemVerilog开发的同学在合并代码时要删除或注释掉`include`行，要保证核的所有代码和参数定义都在且仅在`ysyx_学号后六位.v`文件中。同时删除或注释掉接入difftest时可能引入的DPI-C函数。合并代码的具体操作可以自己写个脚本实现。
@@ -242,7 +243,9 @@ optional arguments:
   > 注意：除了clone的`./submit`的gitee仓库外，不要在`./submit`中添加额外的文件夹，因为提交脚本是通过`os.path.isdir()`来自动确定本地clone的仓库名字的，如果`./submit`中存在多个文件夹，则程序无法分辨哪个是本地clone的仓库了。
 * 将自己仓库的`HTTPS格式的URL`和`ysyx_学号后六位`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
 
-> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://gitee.com/OSCPU/ysyx_submit/blob/ysyx4)。
+* 代码提交后会被CI/CD程序自动拉取，并进行相应的测试。代码也可以手动提交，**但是需要确保每次提交都要以`dc & vcs`作为commit信息**，CI/CD程序只会识别`dc & vcs`的commit信息。
+
+> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将使用CI/CD程序定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://gitee.com/OSCPU/ysyx_submit/blob/ysyx4)。
 
 
 ## 协助SoC团队在流片仿真环境中启动RT-Thread(北京时间 2022/11/07 23:59:59前完成)
@@ -257,10 +260,23 @@ optional arguments:
 * 没有真实器件的延时信息。
 
 
-> **当完成到这一步，即同时通过Verilator和VCS的仿真测试，且dc综合也满足时序和面积要求的同学，即可获得预流片资格。后续当通过项目组组织的在线答辩后将正式获得一生一芯第四期的流片资格。**
+> **当完成到这一步，即同时通过Verilator和VCS的仿真测试，且dc综合也满足时序和面积要求的同学，即可获得预流片资格。后续当通过项目组组织的在线考核后将正式获得一生一芯第四期的流片资格。**
 
 ## 扩展内容
-> 注意：**以下内容不是同学们必须要完成的任务，而是给那些对我们提供的SoC仿真框架有定制化需求的同学们提供的。下面分别介绍了生成自己的Verilator仿真程序所需要的必要步骤和使用chisel生成ysyxSoCFull框架的过程和注意要点**。
+> 注意：**以下内容不是同学们必须要完成的任务，而是给那些对我们提供的SoC仿真框架有定制化需求的同学们提供的。下面分别介绍了编译和生成自己的测试程序、生成自己的Verilator仿真程序所需要的必要步骤和使用chisel生成ysyxSoCFull框架的过程和注意要点**。
+
+## 生成自己的测试程序
+为了方便同学们给自己的核编译软件进行测试，在`./utils`下提供了适配ysyxSoC环境的`abstract-machine`，同时提供了脚本方便进行编译操作，具体步骤如下：
+* 切换到`./utils`并执行`source setup.sh`命令设置`AM_HOME`环境变量，注意setup脚本使用了pwd命令，所以必须切换到`./utils`才能正确设置变量路径。
+* 将自己的测试程序源码目录放到`./prog/src`下，源码目录下需要有个Makefile，其内容格式可以参考`./prog/src/hello/Makefile`：
+    ```Makefile
+    SRCS = hello.c # 所有的源码路径
+    NAME = hello   # 生成的可执行程序名
+
+    include $(AM_HOME)/Makefile
+    ```
+* 然后切换到`./prog/src`，修改`APP_NAME`和`APP_TYPE`的值。其中`APP_NAME`修改为上一个步骤中Makefile中填写的`NAME`，`APP_TYPE`修改为`flash`或者`mem`，表示生成的程序的加载类型，`flash`表示程序从flash直接执行，`mem`表示程序先从flash加载到mem中，然后再执行。
+* 执行`./prog/src/run.py`，编译通过的话就可以在`./prog/bin/$(FLASH_TYPE)`下得到可执行程序。
 
 ## ysyxSoCFull定制集成步骤
 * 将`ysyxSoC/ysyx/perip`目录及其子目录下的所有`.v`文件加入verilator的Verilog/SystemVerilog文件列表。
