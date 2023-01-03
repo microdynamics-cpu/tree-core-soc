@@ -39,7 +39,7 @@ ysyxSoC/ysyx
 同学们执行SoC集成的所有测试任务都可以运行当前目录下的`main.py`完成，我们提供的`main.py`脚本包含有端口命名检查、代码规范检查和Verilator程序编译与仿真测试的全部功能，可以输入`./main.py -h`来获得其支持的功能列表：
 ```sh
 $> ./main.py -h
-usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST TEST] [-r] [-fr] [-su] [-y]
+usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST TEST] [-r] [-fr] [-su] [-y] [-p]
 
 OSCPU Season 4 SoC Test
 
@@ -51,11 +51,12 @@ optional arguments:
   -c, --comp            compile core with SoC in normal flash mode
   -fc, --fst_comp       compile core with SoC in fast flash mode
   -t TEST TEST TEST TEST, --test TEST TEST TEST TEST
-                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv] [cmd|gui] [no-wave|wave]. note: some programs dont support gui mode, so need to set right mode carefully
+                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv|kdb] [cmd|gui] [no-wave|wave]. note: some programs dont support gui mode, so need to set right mode carefully
   -r, --regress         run all test in normal flash mode
   -fr, --fst_regress    run all test in fast flash mode
   -su, --submit         submit code and spec to CICD
   -y, --ysyx            compile ysyxSoCFull framework[NOT REQUIRED]
+  -p, --prog            compile all test prog[NOT REQUIRED]
 ```
 
 具体来说，每个同学都需要按照顺序进行：
@@ -165,6 +166,7 @@ optional arguments:
 * 处理器的复位PC需设置为`0x3000_0000`，第一条指令从flash中取出。
 * CLINT模块位于处理器核内部，SoC不提供，需要同学们自行实现。
 * 接入外部中断需要同学们**自行设计仲裁逻辑**(核的top层已经预留有io_interrupt接口， 该口会从SoC引出并通过ChipLink接入到FPGA中。同学们需要自行在FPGA上实现PLIC。核在接收到中断会jump到异常处理程序，之后通过读ChipLink MMIO的相关寄存器来查看中断源信息并响应。异常处理完后可以通过写ChipLink MMIO的相关寄存器来清除中断源，**外部中断功能是可选实现的，但不实现的话仍需保留io_interrupt接口**)。
+* MMIO地址的VGA和Frame Buffer范围都会访问vga ctrl。0x1000_2000~0x1000_2fff是访问vga的axi4从口来进行功能配置。vga的帧缓冲实际上保存在内存中，但我们希望对帧缓冲的写入通过MMIO总线进行，所以在vga模块中加入了一个映射模块，处理器将对某个像素的写入发送到MMIO Frame Buffer的地址上，vga对这个地址加上偏移量，从而获取到像素位于内存的地址，并通过自身的axi4主机口将读写请求转发给内存。
 * 接入同学们自行设计的设备需要核内实现并将设备寄存器分配到**Reserve地址范围内**。
 > 注意：四期SoC的地址空间中没有设置与SoC时钟和管脚相关的功能寄存器，**即不支持通过软件访问某个确定地址来设置SoC相关参数**。
 
@@ -190,18 +192,13 @@ optional arguments:
     * memtest-mem.bin
     * rtthread-mem.bin
     * ...
-  * ~~通过loader把程序加载到sdram，然后跳转运行(位于`./prog/bin/sdram`目录下)。~~
-    * ~~hello-sdram.bin~~
-    * ~~memtest-sdram.bin~~
-    * ~~rtthread-sdram.bin~~
-    * ...
 * 通过正常模式(不跳过SPI传输，仿真速度慢，用于最终的系统测试)对flash进行模拟，重新运行上述测试程序。你需要在`./perip/spi/rtl/spi.v`的开头取消对宏`FAST_FLASH`的定义：
   ```Verilog
   // define this macro to enable fast behavior simulation
   // for flash by skipping SPI transfers
   // `define FAST_FLASH
   ```
-    * 然后再分别重新运行上面提到的flash、mem~~和sdram测试程序~~：
+    * 然后再分别重新运行上面提到的flash、mem：
         * hello-flash.bin
         * memtest-flash.bin
         * rtthread-flash.bin
@@ -218,7 +215,7 @@ optional arguments:
     ```sh
     $> ./main.py -t APP_TYPE APP_NAME SOC_SIM_MODE SOC_WAV_MODE
     ```
-    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。`SOC_WAV_MODE`的可选值有`no-wave`和`wave`。比如运行`./main.py -t flash hello cmd no-wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且不输出波形。运行`./main.py -t mem hello cmd wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且输出波形，波形文件的路径为`./ysyx/soc.wave`。波形的默认格式是`FST`，FST是GTKWave自己开发的一种二进制波形格式，相比VCD文件体积更小。~~运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。~~
+    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。`SOC_WAV_MODE`的可选值有`no-wave`和`wave`。比如运行`./main.py -t flash hello cmd no-wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且不输出波形。运行`./main.py -t mem hello cmd wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且输出波形，波形文件的路径为`./ysyx/soc.wave`。波形的默认格式是`FST`，FST是GTKWave自己开发的一种二进制波形格式，相比VCD文件体积更小。运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。
     > 注意：**所有的测试程序只能在一种执行环境下运行，具体在哪个环境下运行见[文档](./prog/README.md)**。如果需要输出VCD格式的波形文件，只需要在[./sim/Makefile](./sim/Makefile)的开头把`WAVE_FORMAT ?= FST`修改成`WAVE_FORMAT ?= VCD`，然后重新编译即可。**需要强调的一点是使用`wave`选项开启波形输出后，程序运行时间会变长，如果程序没有跑出结果就结束的话，请自行修改下面小节介绍的"预设运行时间"。**
 
 * 运行`./main.py -r`和`./main.py -fr`就可以依次运行flash正常模式与快速模式的回归测试，回归测试只测试在`cmd`执行环境下的程序，`gui`执行环境下的程序不进行回归测试。
