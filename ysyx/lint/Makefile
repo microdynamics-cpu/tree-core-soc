@@ -1,5 +1,4 @@
-# modify to your ID. DO NOT add any trailing space!!!
-ID ?= 000000
+ID ?= 00000000
 
 TOP = ysyx_$(ID)
 V_FILE = ../soc/$(TOP).v

@@ -3,7 +3,7 @@
 import os
 import argparse
 
-stud_id = '040228'  # the last six digits of the student ID
+stud_id = '22040228'  # modify `stud_id` to your own value
 app_type = ['flash', 'mem']
 app = [('hello', 40, 'cmd'), ('memtest', 140, 'cmd'),
        ('rtthread', 1000, 'cmd'), ('muldiv', 60, 'cmd'), ('kdb', 1000, 'gui')]
