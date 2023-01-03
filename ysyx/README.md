@@ -102,6 +102,7 @@ optional arguments:
     $> grep -rn "^ *reg " -A1 myCPU.fir | sed ":a;N;s/:\n//g;ba" | sed ":a;N;s/--\n//g;ba" | grep -v "reset =>"
     ```
     其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。如果上述存在输出，需要按照行号到`xxx.fir`中指定行查看，由于reg的`reset =>`可能会换行，这个换行也会导致命令行输出。所以还需再检查下一行的内容中是否存在`reset =>`。
+    > 注意: chisel只根据firrtl的reset可能无法很准确地判断寄存器的初始化情况，因为reset有时候只会初始化寄存器的部分位，如果初始化的寄存器中是一个bundle，则问题跟明显。所以建议使用chisel实现代码的同学，还是需要**自己手动检查下是否所有的寄存器都正确地复位了**。只通过上面`grep reset`的方法可能无法检查出所有问题。
 
 * 对于Cache来说，需要：
     * 确认ICache和DCache的data array的大小均不大于4KB，总和不大于8KB。
@@ -315,6 +316,7 @@ optional arguments:
 * 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误和提交脚本换行的问题。
 * 感谢[卢琨(ysyx_22041812)](./)同学提出一个更好对chisel中的寄存器进行复位检查的命令。
 * 感谢[汪洵(ysyx_22040053)](./)同学发现sdl2图片加载地址的非法内存访问bug并提供了代码修改。
+* 感谢[卢琨(ysyx_22041812)](./)同学发现chisel中只使用`grep reset`检查的不完备性并提出相应的调试建议。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>
