@@ -70,24 +70,24 @@ optional arguments:
 
 ## 一些准备工作
 为了使用`main.py`进行测试，需要：
-* 将CPU代码合并到一个`.v`文件，文件名为`ysyx_学号后六位.v`，如`ysyx_040228.v`。
+* 将CPU代码合并到一个`.v`文件，文件名为`ysyx_8位学号.v`，如`ysyx_22040228.v`。
     * 在Linux上可通过`cat`命令实现：
     ```sh
-    $> cat CPU.v ALU.v regs.v ... > ysyx_040228.v
+    $> cat CPU.v ALU.v regs.v ... > ysyx_22040228.v
     ```
-* 将CPU顶层命名修改为`ysyx_学号后六位.v`，如`ysyx_040228.v`。
+* 将CPU顶层命名修改为`ysyx_8位学号.v`，如`ysyx_22040228.v`。
 * 按照[CPU端口命名规范](./stand/interface.md)修改CPU顶层端口名。
-* 为CPU内的所有模块名添加前缀`ysyx_学号后六位_`。
-    * 如`module ALU`修改为`module ysyx_040228_ALU`。
+* 为CPU内的所有模块名添加前缀`ysyx_8位学号_`。
+    * 如`module ALU`修改为`module ysyx_22040228_ALU`。
     * Chisel福利：我们提供一个[firrtl transform](./utils/AddModulePrefix.scala)来自动添加模块名前缀，使用方法参考[相关说明文档](./utils/README.md)。
 * 对于使用Verilog/SystemVerilog代码实现的处理器核，目前暂时无法进行模块名前缀的自动添加，请手动进行添加。
-* 为CPU内所有的`define`添加前缀`ysyx_学号后六位_`，这是为了避免后端物理设计时出现多个同学的核变量定义重名情况的出现。
-* **将改好的`ysyx_学号后六位.v`，如`ysyx_040228.v`放到的./soc目录下**。
-* 将`main.py`中的`stud_id`**设置为学号的后六位**，比如学号为22040228的同学，设置`stud_id='040228'`。
-> 注意：使用Verilog/SystemVerilog开发的同学在合并代码时要删除或注释掉`include`行，要保证核的所有代码和参数定义都在且仅在`ysyx_学号后六位.v`文件中。同时删除或注释掉接入difftest时可能引入的DPI-C函数。合并代码的具体操作可以自己写个脚本实现。
+* 为CPU内所有的`define`添加前缀`ysyx_8位学号_`，这是为了避免后端物理设计时出现多个同学的核变量定义重名情况的出现。
+* **将改好的`ysyx_8位学号.v`，如`ysyx_22040228.v`放到的./soc目录下**。
+* 将`main.py`中的`stud_id`**设置为8位学号**，比如学号为22040228的同学，设置`stud_id='22040228'`。
+> 注意：使用Verilog/SystemVerilog开发的同学在合并代码时要删除或注释掉`include`行，要保证核的所有代码和参数定义都在且仅在`ysyx_8位学号.v`文件中。同时删除或注释掉接入difftest时可能引入的DPI-C函数。合并代码的具体操作可以自己写个脚本实现。
 
 ## 命名规范检查(北京时间 2022/10/07 23:59:59前完成)
-运行脚本执行命名规范检查，该脚本会检查同学们实现的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、 `WSL2-Ubuntu 20.04`和`Windows10`。
+运行脚本执行命名规范检查，该脚本会检查同学们实现的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、`WSL2-Ubuntu 20.04`和`Windows10`。
 * 在当前目录下运行`./main.py -s`。
 * 最后可以在终端看到检查结果，如果检查通过，则会在终端打印出：
     ```sh
@@ -103,7 +103,7 @@ optional arguments:
     $> grep -rn "^ *reg " -A1 myCPU.fir | sed ":a;N;s/:\n//g;ba" | sed ":a;N;s/--\n//g;ba" | grep -v "reset =>"
     ```
     其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。如果上述存在输出，需要按照行号到`xxx.fir`中指定行查看，由于reg的`reset =>`可能会换行，这个换行也会导致命令行输出。所以还需再检查下一行的内容中是否存在`reset =>`。
-    > 注意: chisel只根据firrtl的reset可能无法很准确地判断寄存器的初始化情况，因为reset有时候只会初始化寄存器的部分位，如果初始化的寄存器中是一个bundle，则问题跟明显。所以建议使用chisel实现代码的同学，还是需要**自己手动检查下是否所有的寄存器都正确地复位了**。只通过上面`grep reset`的方法可能无法检查出所有问题。
+    > 注意: chisel只根据firrtl的reset可能无法很准确地判断寄存器的初始化情况，因为reset有时候只会初始化寄存器的部分位，如果初始化的寄存器中是一个bundle，则问题更明显。所以建议使用chisel实现代码的同学，还是需要**自己手动检查下是否所有的寄存器都正确地复位了**。只通过上面`grep reset`的方法可能无法检查出所有问题。
 
 * 对于Cache来说，需要：
     * 确认ICache和DCache的data array的大小均不大于4KB，总和不大于8KB。
@@ -173,7 +173,7 @@ optional arguments:
 > 注意：四期SoC的地址空间中没有设置与SoC时钟和管脚相关的功能寄存器，**即不支持通过软件访问某个确定地址来设置SoC相关参数**。
 
 ### Verilator仿真要求如下：
-* 使用Verilator将自己的核`ysyx_学号后六位.v`和`ysyxSoCFull.v`正确编译成可执行仿真程序`emu`。
+* 使用Verilator将自己的核`ysyx_8位学号.v`和`ysyxSoCFull.v`正确编译成可执行仿真程序`emu`。
 * 确认清除Warning后的代码可以成功启动hello、memtest和rtthread等程序。**四期SoC添加了新的测试程序，测试程序的具体内容和要求请见[这里](./prog/README.md)**。
 * 通过快速模式(跳过SPI传输，不可综合，适合快速调试和迭代)对flash进行模拟，运行并通过本框架提供的测试程序。为了打开flash的快速模式，你需要在`./perip/spi/rtl/spi.v`的开头定义宏`FAST_FLASH`：
   ```Verilog
@@ -237,11 +237,11 @@ optional arguments:
 * 将成功运行本框架的flash正常模式`rtthread-mem.bin`的截图文件`rtthread-mem.png`放置于`./submit`目录下。
 * 填写`./submit`目录下的cache规格文档[cache_spec.md](./submit/cache_spec.md)。
 * 确认已经根据代码规范检查并在`./lint`目录下填写完[warning.md](./lint/warning.md)。
-* 制作一份带数据流向的处理器架构图，并对图中各模块做简单说明，整理成`ysyx_学号后六位.pdf`文件并放置于`./submit`目录下。
+* 制作一份带数据流向的处理器架构图，并对图中各模块做简单说明，整理成`ysyx_8位学号.pdf`文件并放置于`./submit`目录下。
 * 创建自己的gitee开源仓库，确认仓库的默认主分支是`master`。
 * 确认仓库通过ssh的方式clone到`./submit`目录下并填写完成git的`user.email`和`user.name`。然后运行`./main.py -su`，该脚本会先检查上述提交文件是否齐全，齐全的话会将文件拷贝到本地clone的仓库中，并推送到远端gitee仓库。
   > 注意：除了clone的`./submit`的gitee仓库外，不要在`./submit`中添加额外的文件夹，因为提交脚本是通过`os.path.isdir()`来自动确定本地clone的仓库名字的，如果`./submit`中存在多个文件夹，则程序无法分辨哪个是本地clone的仓库了。
-* 将自己仓库的`HTTPS格式的URL`和`ysyx_学号后六位`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
+* 将自己仓库的`HTTPS格式的URL`和`ysyx_8位学号`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
 
 * 代码提交后会被CI/CD程序自动拉取，并进行相应的测试。代码也可以手动提交，**但是需要确保每次提交都要以`dc & vcs`作为commit信息**，CI/CD程序只会识别`dc & vcs`的commit信息。
 
