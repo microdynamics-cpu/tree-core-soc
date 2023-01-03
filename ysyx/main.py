@@ -88,8 +88,10 @@ def gen_test_prog():
     for i in app_type:
         for j in app:
             print('i: ' + i + ' j: ' + j[0])
-            os.system("sed -i \"s/\(^APP_TYPE\s\+=\s\+\)'[a-z]\+'/\\1'" + i + "'/\" run.py")
-            os.system("sed -i \"s/\(^APP_NAME\s\+=\s\+\)'[a-z]\+'/\\1'" + j[0] + "'/\" run.py")
+            os.system("sed -i \"s/\(^APP_TYPE\s\+=\s\+\)'[a-z]\+'/\\1'" + i +
+                      "'/\" run.py")
+            os.system("sed -i \"s/\(^APP_NAME\s\+=\s\+\)'[a-z]\+'/\\1'" +
+                      j[0] + "'/\" run.py")
             os.system('./run.py')
 
 

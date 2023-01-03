@@ -154,7 +154,8 @@ optional arguments:
 | VGA               | `0x1000_2000~0x1000_2fff`|
 | PS2               | `0x1000_3000~0x1000_3fff`|
 | Ethernet          | `0x1000_4000~0x1000_4fff`|
-| Reserve           | `0x1000_5000~0x2fff_ffff`|
+| Reserve           | `0x1000_5000~0x1bff_ffff`|
+| Frame Buffer      | `0x1c00_0000~0x2fff_ffff`|
 | SPI-flash XIP Mode| `0x3000_0000~0x3fff_ffff`|
 | ChipLink MMIO     | `0x4000_0000~0x7fff_ffff`|
 | MEM               | `0x8000_0000~0xfbff_ffff`|

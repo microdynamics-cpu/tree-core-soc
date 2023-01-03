@@ -2,7 +2,7 @@
 
 import os
 
-APP_NAME = 'memtest'
+APP_NAME = 'kdb'
 APP_TYPE = 'mem'  # flash, mem
 APP_ARCH = 'riscv64-mycpu'
 APP_ORG_BIN = APP_NAME + '-' + APP_ARCH + '.bin'
