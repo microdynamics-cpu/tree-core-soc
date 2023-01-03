@@ -72,8 +72,11 @@ void MediaWindow::initImage()
         return;
     }
 
-    char *imgPath = SDL_GetBasePath();
+    char *basePath = SDL_GetBasePath();
+    char imgPath[128];
+    strcpy(imgPath, basePath);
     strcat(imgPath, "../asset/kdb.png");
+    SDL_free(basePath);
     // std::cout << imgPath << std::endl;
     srf = IMG_Load(imgPath);
     if (!srf)

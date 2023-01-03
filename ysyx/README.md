@@ -314,6 +314,7 @@ optional arguments:
 * 感谢[万子琦(ysyx_22040698)](./)同学对README.md中的错别字的提示。
 * 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误和提交脚本换行的问题。
 * 感谢[卢琨(ysyx_22041812)](./)同学提出一个更好对chisel中的寄存器进行复位检查的命令。
+* 感谢[汪洵(ysyx_22040053)](./)同学发现sdl2图片加载地址的非法内存访问bug并提供了代码修改。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>
