@@ -29,7 +29,7 @@ if all_exist:
         os.system('cp ' + v + ' ./' + repo_name)
 
     os.chdir('./' + repo_name)
-    # os.system('git add .')
-    # os.system('git commit -m "dc & vcs"')
-    # os.system('git push')
+    os.system('git add .')
+    os.system('git commit -m "dc & vcs"')
+    os.system('git push')
     os.chdir('../')
