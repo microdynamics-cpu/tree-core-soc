@@ -2,8 +2,8 @@
 
 import os
 
-APP_NAME = 'rtthread'
-APP_TYPE = 'flash'  # flash, mem, sdram
+APP_NAME = 'muldiv'
+APP_TYPE = 'mem'  # flash, mem
 APP_ARCH = 'riscv64-mycpu'
 APP_ORG_BIN = APP_NAME + '-' + APP_ARCH + '.bin'
 APP_ORG_ELF = APP_NAME + '-' + APP_ARCH + '.elf'
@@ -17,12 +17,17 @@ HOME_DIR = os.getcwd()
 
 def chg_ld_script(app_type):
     os.system("sed -i 's/core_[a-z]\+/core_" + app_type +
-              "/' $AM_HOME/scripts/riscv64-mycpu.mk")
+              "/' $AM_HOME/scripts/" + APP_ARCH + ".mk")
 
 
 def chg_ld_addr(addr):
-    os.system("sed -i 's/\(pmem_start=\)0x[0-9]\+/\\1" + addr +
+    os.system("sed -i 's/\(pmem_start=\)0x[0-9A-Z]\+/\\1" + addr +
               "/' $AM_HOME/scripts/" + APP_ARCH + ".mk")
+
+
+def chg_ld_sp(addr):
+    os.system("sed -i 's/\(_stack_top = ALIGN\)(0x[0-9A-Z]\+)/\\1(" + addr +
+              ")/' $AM_HOME/scripts/platform/core_flash.ld")
 
 
 def copy_oper(app_type):
@@ -30,7 +35,7 @@ def copy_oper(app_type):
         os.system('mv build/' + APP_ORG_BIN + ' build/' + APP_STD_BIN)
         os.system('mv build/' + APP_ORG_ELF + ' build/' + APP_STD_ELF)
 
-    elif app_type == 'mem':
+    else:
         os.system('mv build/' + APP_LOD_BIN + ' build/' + APP_STD_BIN)
         os.system('mv build/' + APP_LOD_ELF + ' build/' + APP_STD_ELF)
 
@@ -59,7 +64,7 @@ elif APP_TYPE == 'mem':
     chg_ld_addr('0x80000000')
     os.chdir(APP_NAME)
     if APP_NAME != 'rtthread':
-        os.system('make ARCH=' + APP_ARCH)
+        os.system('make ARCH=' + APP_ARCH + ' LOAD_TYPE=-DMEM_LOAD')
         os.system('cp build/' + APP_ORG_BIN + ' ' + HOME_DIR + '/loader')
 
     else:
@@ -75,7 +80,6 @@ elif APP_TYPE == 'mem':
     os.system("sed -i 's/^\(BIN_PATH\s\+=\s\+\)\(.\+\)/\\1" + APP_NAME + "-" +
               APP_ARCH + "\.bin/' " + "Makefile")
     os.system('make ARCH=' + APP_ARCH)
-
 
 if APP_NAME != 'rtthread' and APP_TYPE == 'flash':
     copy_oper(APP_TYPE)

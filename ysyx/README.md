@@ -39,7 +39,7 @@ ysyxSoC/ysyx
 同学们执行SoC集成的所有测试任务都可以运行当前目录下的`main.py`完成，我们提供的`main.py`脚本包含有端口命名检查、代码规范检查和Verilator程序编译与仿真测试的全部功能，可以输入`./main.py -h`来获得其支持的功能列表：
 ```sh
 $> ./main.py -h
-usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST TEST] [-r] [-fr] [-su] [-y]
+usage: main.py [-h] [-s] [-l] [-lu] [-c] [-fc] [-t TEST TEST TEST TEST] [-r] [-fr] [-su] [-y] [-p]
 
 OSCPU Season 4 SoC Test
 
@@ -51,11 +51,12 @@ optional arguments:
   -c, --comp            compile core with SoC in normal flash mode
   -fc, --fst_comp       compile core with SoC in fast flash mode
   -t TEST TEST TEST TEST, --test TEST TEST TEST TEST
-                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv] [cmd|gui] [no-wave|wave]. note: some programs dont support gui mode, so need to set right mode carefully
+                        Example: ./main.py -t [flash|mem] [hello|memtest|rtthread|muldiv|kdb] [cmd|gui] [no-wave|wave]. note: some programs dont support gui mode, so need to set right mode carefully
   -r, --regress         run all test in normal flash mode
   -fr, --fst_regress    run all test in fast flash mode
   -su, --submit         submit code and spec to CICD
   -y, --ysyx            compile ysyxSoCFull framework[NOT REQUIRED]
+  -p, --prog            compile all test prog[NOT REQUIRED]
 ```
 
 具体来说，每个同学都需要按照顺序进行：
@@ -69,23 +70,24 @@ optional arguments:
 
 ## 一些准备工作
 为了使用`main.py`进行测试，需要：
-* 将CPU代码合并到一个`.v`文件，文件名为`ysyx_学号后六位.v`，如`ysyx_040228.v`。
+* 将CPU代码合并到一个`.v`文件，文件名为`ysyx_8位学号.v`，如`ysyx_22040228.v`。
     * 在Linux上可通过`cat`命令实现：
     ```sh
-    $> cat CPU.v ALU.v regs.v ... > ysyx_040228.v
+    $> cat CPU.v ALU.v regs.v ... > ysyx_22040228.v
     ```
-* 将CPU顶层命名修改为`ysyx_学号后六位.v`，如`ysyx_040228.v`。
+* 将CPU顶层命名修改为`ysyx_8位学号.v`，如`ysyx_22040228.v`。
 * 按照[CPU端口命名规范](./stand/interface.md)修改CPU顶层端口名。
-* 为CPU内的所有模块名添加前缀`ysyx_学号后六位_`。
-    * 如`module ALU`修改为`module ysyx_040228_ALU`。
+* 为CPU内的所有模块名添加前缀`ysyx_8位学号_`。
+    * 如`module ALU`修改为`module ysyx_22040228_ALU`。
     * Chisel福利：我们提供一个[firrtl transform](./utils/AddModulePrefix.scala)来自动添加模块名前缀，使用方法参考[相关说明文档](./utils/README.md)。
 * 对于使用Verilog/SystemVerilog代码实现的处理器核，目前暂时无法进行模块名前缀的自动添加，请手动进行添加。
-* **将改好的`ysyx_学号后六位.v`，如`ysyx_040228.v`放到的./soc目录下**。
-* 将`main.py`中的`stud_id`**设置为学号的后六位**，比如学号为22040228的同学，设置`stud_id='040228'`。
-> 注意：使用Verilog/SystemVerilog开发的同学在合并代码时要删除或注释掉`include`行，要保证核的所有代码和参数定义都在且仅在`ysyx_学号后六位.v`文件中。同时删除或注释掉接入difftest时可能引入的DPI-C函数。合并代码的具体操作可以自己写个脚本实现。
+* 为CPU内所有的`define`添加前缀`ysyx_8位学号_`，这是为了避免后端物理设计时出现多个同学的核变量定义重名情况的出现。
+* **将改好的`ysyx_8位学号.v`，如`ysyx_22040228.v`放到的./soc目录下**。
+* 将`main.py`中的`stud_id`**设置为8位学号**，比如学号为22040228的同学，设置`stud_id='22040228'`。
+> 注意：使用Verilog/SystemVerilog开发的同学在合并代码时要删除或注释掉`include`行，要保证核的所有代码和参数定义都在且仅在`ysyx_8位学号.v`文件中。同时删除或注释掉接入difftest时可能引入的DPI-C函数。合并代码的具体操作可以自己写个脚本实现。
 
 ## 命名规范检查(北京时间 2022/10/07 23:59:59前完成)
-运行脚本执行命名规范检查，该脚本会检查同学们实现的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、 `WSL2-Ubuntu 20.04`和`Windows10`。
+运行脚本执行命名规范检查，该脚本会检查同学们实现的.v文件是否符合命名规范，并会生成日志文件`check.log`。可执行的测试环境为`Debian10`、`Ubuntu 20.04`、`WSL2-Ubuntu 20.04`和`Windows10`。
 * 在当前目录下运行`./main.py -s`。
 * 最后可以在终端看到检查结果，如果检查通过，则会在终端打印出：
     ```sh
@@ -101,6 +103,7 @@ optional arguments:
     $> grep -rn "^ *reg " -A1 myCPU.fir | sed ":a;N;s/:\n//g;ba" | sed ":a;N;s/--\n//g;ba" | grep -v "reset =>"
     ```
     其中`xxx.fir`的文件名与顶层模块名相关，通常位于`./build`目录下。若上述命令无输出，说明所有寄存器已经带上复位端。如果上述存在输出，需要按照行号到`xxx.fir`中指定行查看，由于reg的`reset =>`可能会换行，这个换行也会导致命令行输出。所以还需再检查下一行的内容中是否存在`reset =>`。
+    > 注意: chisel只根据firrtl的reset可能无法很准确地判断寄存器的初始化情况，因为reset有时候只会初始化寄存器的部分位，如果初始化的寄存器中是一个bundle，则问题更明显。所以建议使用chisel实现代码的同学，还是需要**自己手动检查下是否所有的寄存器都正确地复位了**。只通过上面`grep reset`的方法可能无法检查出所有问题。
 
 * 对于Cache来说，需要：
     * 确认ICache和DCache的data array的大小均不大于4KB，总和不大于8KB。
@@ -154,7 +157,8 @@ optional arguments:
 | VGA               | `0x1000_2000~0x1000_2fff`|
 | PS2               | `0x1000_3000~0x1000_3fff`|
 | Ethernet          | `0x1000_4000~0x1000_4fff`|
-| Reserve           | `0x1000_5000~0x2fff_ffff`|
+| Reserve           | `0x1000_5000~0x1bff_ffff`|
+| Frame Buffer      | `0x1c00_0000~0x2fff_ffff`|
 | SPI-flash XIP Mode| `0x3000_0000~0x3fff_ffff`|
 | ChipLink MMIO     | `0x4000_0000~0x7fff_ffff`|
 | MEM               | `0x8000_0000~0xfbff_ffff`|
@@ -164,11 +168,12 @@ optional arguments:
 * 处理器的复位PC需设置为`0x3000_0000`，第一条指令从flash中取出。
 * CLINT模块位于处理器核内部，SoC不提供，需要同学们自行实现。
 * 接入外部中断需要同学们**自行设计仲裁逻辑**(核的top层已经预留有io_interrupt接口， 该口会从SoC引出并通过ChipLink接入到FPGA中。同学们需要自行在FPGA上实现PLIC。核在接收到中断会jump到异常处理程序，之后通过读ChipLink MMIO的相关寄存器来查看中断源信息并响应。异常处理完后可以通过写ChipLink MMIO的相关寄存器来清除中断源，**外部中断功能是可选实现的，但不实现的话仍需保留io_interrupt接口**)。
+* MMIO地址的VGA和Frame Buffer范围都会访问vga ctrl。0x1000_2000~0x1000_2fff是访问vga的axi4从口来进行功能配置。vga的帧缓冲实际上保存在内存中，但我们希望对帧缓冲的写入通过MMIO总线进行，所以在vga模块中加入了一个映射模块，处理器将对某个像素的写入发送到MMIO Frame Buffer的地址上，vga对这个地址加上偏移量，从而获取到像素位于内存的地址，并通过自身的axi4主机口将读写请求转发给内存。
 * 接入同学们自行设计的设备需要核内实现并将设备寄存器分配到**Reserve地址范围内**。
 > 注意：四期SoC的地址空间中没有设置与SoC时钟和管脚相关的功能寄存器，**即不支持通过软件访问某个确定地址来设置SoC相关参数**。
 
 ### Verilator仿真要求如下：
-* 使用Verilator将自己的核`ysyx_学号后六位.v`和`ysyxSoCFull.v`正确编译成可执行仿真程序`emu`。
+* 使用Verilator将自己的核`ysyx_8位学号.v`和`ysyxSoCFull.v`正确编译成可执行仿真程序`emu`。
 * 确认清除Warning后的代码可以成功启动hello、memtest和rtthread等程序。**四期SoC添加了新的测试程序，测试程序的具体内容和要求请见[这里](./prog/README.md)**。
 * 通过快速模式(跳过SPI传输，不可综合，适合快速调试和迭代)对flash进行模拟，运行并通过本框架提供的测试程序。为了打开flash的快速模式，你需要在`./perip/spi/rtl/spi.v`的开头定义宏`FAST_FLASH`：
   ```Verilog
@@ -189,18 +194,13 @@ optional arguments:
     * memtest-mem.bin
     * rtthread-mem.bin
     * ...
-  * ~~通过loader把程序加载到sdram，然后跳转运行(位于`./prog/bin/sdram`目录下)。~~
-    * ~~hello-sdram.bin~~
-    * ~~memtest-sdram.bin~~
-    * ~~rtthread-sdram.bin~~
-    * ...
 * 通过正常模式(不跳过SPI传输，仿真速度慢，用于最终的系统测试)对flash进行模拟，重新运行上述测试程序。你需要在`./perip/spi/rtl/spi.v`的开头取消对宏`FAST_FLASH`的定义：
   ```Verilog
   // define this macro to enable fast behavior simulation
   // for flash by skipping SPI transfers
   // `define FAST_FLASH
   ```
-    * 然后再分别重新运行上面提到的flash、mem~~和sdram测试程序~~：
+    * 然后再分别重新运行上面提到的flash、mem：
         * hello-flash.bin
         * memtest-flash.bin
         * rtthread-flash.bin
@@ -217,7 +217,7 @@ optional arguments:
     ```sh
     $> ./main.py -t APP_TYPE APP_NAME SOC_SIM_MODE SOC_WAV_MODE
     ```
-    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。`SOC_WAV_MODE`的可选值有`no-wave`和`wave`。比如运行`./main.py -t flash hello cmd no-wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且不输出波形。运行`./main.py -t mem hello cmd wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且输出波形，波形文件的路径为`./ysyx/soc.wave`。波形的默认格式是`FST`，FST是GTKWave自己开发的一种二进制波形格式，相比VCD文件体积更小。~~运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。~~
+    来对某个特定测试程序进行仿真，其中`APP_TYPE`可选值为`flash`和`mem`，分别表示flash和memory加载两种启动方式。`APP_NAME`的可选值有`hello`、`memtest`和`rtthread`等。所有的支持的程序名见`./main.py -h`中的`-t`选项的列表。`SOC_SIM_MODE`的可选值有`cmd`和`gui`，分别表示仿真的执行环境，`cmd`表示命令行执行环境，程序会在命令行输出仿真结果。`gui`表示图形执行环境，程序会使用SDL2将RTL的数据进行图形化交互展示。`SOC_WAV_MODE`的可选值有`no-wave`和`wave`。比如运行`./main.py -t flash hello cmd no-wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且不输出波形。运行`./main.py -t mem hello cmd wave`可以仿真flash模式下的命令行执行环境的hello测试程序，并且输出波形，波形文件的路径为`./ysyx/soc.wave`。波形的默认格式是`FST`，FST是GTKWave自己开发的一种二进制波形格式，相比VCD文件体积更小。运行`./main.py -t mem kdb gui`可以仿真mem加载模式下图形执行环境的键盘测试程序。
     > 注意：**所有的测试程序只能在一种执行环境下运行，具体在哪个环境下运行见[文档](./prog/README.md)**。如果需要输出VCD格式的波形文件，只需要在[./sim/Makefile](./sim/Makefile)的开头把`WAVE_FORMAT ?= FST`修改成`WAVE_FORMAT ?= VCD`，然后重新编译即可。**需要强调的一点是使用`wave`选项开启波形输出后，程序运行时间会变长，如果程序没有跑出结果就结束的话，请自行修改下面小节介绍的"预设运行时间"。**
 
 * 运行`./main.py -r`和`./main.py -fr`就可以依次运行flash正常模式与快速模式的回归测试，回归测试只测试在`cmd`执行环境下的程序，`gui`执行环境下的程序不进行回归测试。
@@ -237,13 +237,15 @@ optional arguments:
 * 将成功运行本框架的flash正常模式`rtthread-mem.bin`的截图文件`rtthread-mem.png`放置于`./submit`目录下。
 * 填写`./submit`目录下的cache规格文档[cache_spec.md](./submit/cache_spec.md)。
 * 确认已经根据代码规范检查并在`./lint`目录下填写完[warning.md](./lint/warning.md)。
-* 制作一份带数据流向的处理器架构图，并对图中各模块做简单说明，整理成`ysyx_学号后六位.pdf`文件并放置于`./submit`目录下。
+* 制作一份带数据流向的处理器架构图，并对图中各模块做简单说明，整理成`ysyx_8位学号.pdf`文件并放置于`./submit`目录下。
 * 创建自己的gitee开源仓库，确认仓库的默认主分支是`master`。
 * 确认仓库通过ssh的方式clone到`./submit`目录下并填写完成git的`user.email`和`user.name`。然后运行`./main.py -su`，该脚本会先检查上述提交文件是否齐全，齐全的话会将文件拷贝到本地clone的仓库中，并推送到远端gitee仓库。
   > 注意：除了clone的`./submit`的gitee仓库外，不要在`./submit`中添加额外的文件夹，因为提交脚本是通过`os.path.isdir()`来自动确定本地clone的仓库名字的，如果`./submit`中存在多个文件夹，则程序无法分辨哪个是本地clone的仓库了。
-* 将自己仓库的`HTTPS格式的URL`和`ysyx_学号后六位`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
+* 将自己仓库的`HTTPS格式的URL`和`ysyx_8位学号`发送给组内助教以完成第一次代码提交。后续提交只需要重新运行`./main.py -su`命令即可。
 
-> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://gitee.com/OSCPU/ysyx_submit/blob/ysyx4)。
+* 代码提交后会被CI/CD程序自动拉取，并进行相应的测试。代码也可以手动提交，**但是需要确保每次提交都要以`dc & vcs`作为commit信息**，CI/CD程序只会识别`dc & vcs`的commit信息。
+
+> 注意：后续提交不可修改Cache规格，只能根据report反馈修复bug。SoC和后端团队将使用CI/CD程序定期检查新提交的代码，进行综合和仿真测试，并将结果以日志报告的形式上传至ysyx_submit仓库的**ysyx4分支**，具体说明请参考[ysyx_submit仓库的说明文档](https://gitee.com/OSCPU/ysyx_submit/blob/ysyx4)。
 
 
 ## 协助SoC团队在流片仿真环境中启动RT-Thread(北京时间 2022/11/07 23:59:59前完成)
@@ -258,10 +260,23 @@ optional arguments:
 * 没有真实器件的延时信息。
 
 
-> **当完成到这一步，即同时通过Verilator和VCS的仿真测试，且dc综合也满足时序和面积要求的同学，即可获得预流片资格。后续当通过项目组组织的在线答辩后将正式获得一生一芯第四期的流片资格。**
+> **当完成到这一步，即同时通过Verilator和VCS的仿真测试，且dc综合也满足时序和面积要求的同学，即可获得预流片资格。后续当通过项目组组织的在线考核后将正式获得一生一芯第四期的流片资格。**
 
 ## 扩展内容
-> 注意：**以下内容不是同学们必须要完成的任务，而是给那些对我们提供的SoC仿真框架有定制化需求的同学们提供的。下面分别介绍了生成自己的Verilator仿真程序所需要的必要步骤和使用chisel生成ysyxSoCFull框架的过程和注意要点**。
+> 注意：**以下内容不是同学们必须要完成的任务，而是给那些对我们提供的SoC仿真框架有定制化需求的同学们提供的。下面分别介绍了编译和生成自己的测试程序、生成自己的Verilator仿真程序所需要的必要步骤和使用chisel生成ysyxSoCFull框架的过程和注意要点**。
+
+## 生成自己的测试程序
+为了方便同学们给自己的核编译软件进行测试，在`./utils`下提供了适配ysyxSoC环境的`abstract-machine`，同时提供了脚本方便进行编译操作，具体步骤如下：
+* 切换到`./utils`并执行`source setup.sh`命令设置`AM_HOME`环境变量，注意setup脚本使用了pwd命令，所以必须切换到`./utils`才能正确设置变量路径。
+* 将自己的测试程序源码目录放到`./prog/src`下，源码目录下需要有个Makefile，其内容格式可以参考`./prog/src/hello/Makefile`：
+    ```Makefile
+    SRCS = hello.c # 所有的源码路径
+    NAME = hello   # 生成的可执行程序名
+
+    include $(AM_HOME)/Makefile
+    ```
+* 然后切换到`./prog/src`，修改`APP_NAME`和`APP_TYPE`的值。其中`APP_NAME`修改为上一个步骤中Makefile中填写的`NAME`，`APP_TYPE`修改为`flash`或者`mem`，表示生成的程序的加载类型，`flash`表示程序从flash直接执行，`mem`表示程序先从flash加载到mem中，然后再执行。
+* 执行`./prog/src/run.py`，编译通过的话就可以在`./prog/bin/$(FLASH_TYPE)`下得到可执行程序。
 
 ## ysyxSoCFull定制集成步骤
 * 将`ysyxSoC/ysyx/perip`目录及其子目录下的所有`.v`文件加入verilator的Verilog/SystemVerilog文件列表。
@@ -316,6 +331,8 @@ optional arguments:
 * 感谢[万子琦(ysyx_22040698)](./)同学对README.md中的错别字的提示。
 * 感谢[丁亚伟(ysyx_22040561)](./)同学指出ysyxSoCFull.v文件中的核顶层文件名错误和提交脚本换行的问题。
 * 感谢[卢琨(ysyx_22041812)](./)同学提出一个更好对chisel中的寄存器进行复位检查的命令。
+* 感谢[汪洵(ysyx_22040053)](./)同学发现sdl2图片加载地址的非法内存访问bug并提供了代码修改。
+* 感谢[卢琨(ysyx_22041812)](./)同学发现chisel中只使用`grep reset`检查的不完备性并提出相应的调试建议。
 
 ## 参考
 [1] [FDU NSCSCC 附加资料：组合逻辑环与UNOPT(GPL-3.0)](https://fducslg.github.io/ICS-2021Spring-FDU/misc/unopt.html)<span id="id_verilator_unopt"></span>

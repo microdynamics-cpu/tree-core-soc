@@ -4,9 +4,7 @@
 
 const int32_t MOD = 1e4 + 7;
 
-// #define LOADER
-
-#ifdef LOADER
+#ifdef MEM_LOAD
 #define P (998244353)
 #define G (3)
 #define inv_G (332748118)
@@ -49,7 +47,7 @@ Matrix fst_exp(Matrix x, int32_t y)
     return res;
 }
 
-#ifdef LOADER
+#ifdef MEM_LOAD
 inline int64_t FP(int64_t x, int64_t k)
 {
     int64_t t = 1;
@@ -100,7 +98,7 @@ int32_t main()
     assert((ans.v11 + ans.v12) % MOD == 6545);
     putstr("fibonacci test pass!\n");
 
-#ifdef LOADER
+#ifdef MEM_LOAD
     int32_t lim = 1, len = 0;
     while (lim <= n + m)
         lim <<= 1, ++len;

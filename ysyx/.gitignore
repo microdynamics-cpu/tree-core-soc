@@ -6,3 +6,4 @@ build
 *.gtkw
 ysyx_*.v
 rt-thread
+abstract-machine

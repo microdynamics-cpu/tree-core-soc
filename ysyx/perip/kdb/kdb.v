@@ -79,7 +79,9 @@ always@(posedge clock or negedge resetn) begin
       rec_dat <= 8'b0;
     end
     else begin
+      // verilator lint_off WIDTH
       send_val <= rec_dat[send_cnt-1'b1]; // NOTE: bit width
+      // verilator lint_on WIDTH
       send_cnt <= send_cnt + 1'b1;
     end
   end

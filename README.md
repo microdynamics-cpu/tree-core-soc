@@ -10,11 +10,11 @@ $> git clone --depth 1 -b ysyx4 https://github.com/OSCPU/ysyxSoC.git
 
 当框架代码有更新时，通过`git pull`命令来将代码同步到本地。
 
-## 相关讲座
+## 相关讲座和资料
+1. SoC对接会议视频：[这里](https://www.bilibili.com/video/BV1We411M7xi/?spm_id_from=333.999.0.0&vd_source=81df3ac45346223ee4473448aec39121)。
+2. SOC对接会PPT：[这里](https://github.com/ysyx-ta/ysyx-soc)。
 
-视频回看和讲座PDF文件请见[这里](https://oscpu.github.io/ysyx/events/events.html?EID=2021-09-01_SoC_Arch_And_Spec)。
-
-注意: 若视频和PDF文件中的说法与本项目说明不一致, **以本项目说明为准**。
+>注意: 若视频和PPT文件中的说法与本框架说明不一致, **以本框架说明为准**。
 
 ## SoC集成测试Checklist
 **SoC集成测试任务的详细内容请点击[./ysyx/README.md](./ysyx/README.md)查看，所有任务都可以在./ysyx子目录下完成。**
